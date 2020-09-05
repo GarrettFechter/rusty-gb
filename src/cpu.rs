@@ -14,23 +14,26 @@ impl MemoryBus {
 struct CPU {
     reg: Registers,
     bus: MemoryBus,
+    pc: u16,
+    sp: u16,
 }
 
 impl CPU {
+    // Executes given instruction and returns next pc
     fn execute(&mut self, instruction: Instruction) {
         match instruction {
             Instruction::ADD(target) => {
                 match target {
                     ArithmeticTarget::C => {
-                        let value = self.register.c;
+                        let value = self.reg.c;
                         let new_value = self.add(value);
-                        self.registers.a = new_value;
-                        self.pc.wrapping_add(1);
+                        self.reg.a = new_value;
+                        self.pc.wrapping_add(1)
                     }
                     _ => { self.pc } // TODO: implement ADD on other registers
                 }
             }
-            Instruction::LD(load_type) -> {
+            Instruction::LD(load_type) => {
                 match load_type {
                     LoadType::Byte(dest, source) => {
                         let source_value = match source {
@@ -53,8 +56,14 @@ impl CPU {
                             },
                             LoadSource::BC   => self.bus.read_byte(self.reg.get_bc()),
                             LoadSource::DE   => self.bus.read_byte(self.reg.get_de()),
+                            LoadSource::HL   => self.bus.read_byte(self.reg.get_hl()),
                             LoadSource::A8   => self.bus.read_byte(0xFF00 | self.bus.read_byte(self.pc + 1)),
-                            LoadSource::A16  => self.bus.read_byte(self.bus.read_byte(self.pc + 1) | (self.bus.read_byte(self.pc + 2) << 4))),
+                            LoadSource::C_A8   => self.bus.read_byte(0xFF00 | self.reg.c),
+                            LoadSource::A16  => {
+                                // pc+1 holds LSB, pc+2 holds MSB
+                                let addr = self.bus.read_byte(self.pc + 1) | (self.bus.read_byte(self.pc + 2) << 4);
+                                self.bus.read_byte(addr)
+                            },
                             LoadSource::IMM8 => self.bus.read_byte(self.pc + 1),
                         }
 
@@ -69,15 +78,27 @@ impl CPU {
                             LoadDestination::HLI => {
                                 self.bus.write_byte(self.reg.get_hl, source_value);
                                 self.reg.set_hl(self.reg.get_hl().wrapping_add(1));
-                            }
+                            },
                             LoadDestination::HLD => {
                                 self.bus.write_byte(self.reg.get_hl, source_value);
                                 self.reg.set_hl(self.reg.get_hl().wrapping_sub(1));
-                            }
+                            },
                             LoadDestination::BC  => self.bus.write_byte(self.reg.get_bc(), source_value),
                             LoadDestination::DE  => self.bus.write_byte(self.reg.get_de(), source_value),
-                            LoadDestination::A8  => self.bus.write_byte(0xFF00 | self.bus.read_byte(self.pc + 1), source_value),
-                            LoadDestination::A16 => self.bus.write_byte(self.bus.read_byte(self.pc + 1) | (self.bus.read_byte(self.pc + 2) << 4), source_value),
+                            LoadDestination::HL  => self.bus.write_byte(self.reg.get_hl(), source_value),
+                            LoadDestination::A8  => {
+                                let addr = 0xFF00 | self.bus.read_byte(self.pc + 1);
+                                self.bus.write_byte(addr, source_value),
+                            }
+                            LoadDestination::C_A8  => {
+                                let addr = 0xFF00 | self.reg.c;
+                                self.bus.write_byte(addr, source_value),
+                            }
+                            LoadDestination::A16 => {
+                                // pc+1 holds LSB, pc+2 holds MSB
+                                let addr = self.bus.read_byte(self.pc + 1) | (self.bus.read_byte(self.pc + 2) << 4);
+                                self.bus.write_byte(addr, source_value)
+                            }
                         }
 
                         match (dest, source) {
@@ -85,12 +106,12 @@ impl CPU {
 
                             (_, LoadSource::A8)   |
                             (_, LoadSource::IMM8) |
-                            (LoadDestination::A8, _) => // pc += 2
+                            (LoadDestination::A8, _) => self.pc.wrapping_add(2),
 
                             (_, LoadSource::A16) |
-                            (LoadDestination::A16, _) => // pc += 3
+                            (LoadDestination::A16, _) => self.pc.wrapping_add(3),
 
-                            (_, _) => // pc++
+                            (_, _) => self.pc.wrapping_add(1),
                         }
                     }
                 }
@@ -100,6 +121,7 @@ impl CPU {
         }
     }
 
+    // Reads and executes instruction at pc
     fn step(&mut self) {
         let mut instruction_byte = self.bus.read_byte(pc);
 
@@ -113,12 +135,11 @@ impl CPU {
     }
 
     fn add(&mut self, value: u8) -> u8 {
-        let (new_value, did_overflow) = self.registers.a.overflowing_add(value);
-        // TODO: do something with flags and did_overflow
-        self.registers.f.zero = new_value == 0;
-        self.registers.f.subtract = false;
-        self.registers.f.carry = did_overflow;
-        self.registers.f.half_carry = (self.registers.a & 0xF) + (value & 0xF) > 0xF;
+        let (new_value, did_overflow) = self.reg.a.overflowing_add(value);
+        self.reg.f.zero = new_value == 0;
+        self.reg.f.subtract = false;
+        self.reg.f.carry = did_overflow;
+        self.reg.f.half_carry = (self.reg.a & 0xF) + (value & 0xF) > 0xF;
         new_value
     }
 }
