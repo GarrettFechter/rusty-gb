@@ -41,6 +41,7 @@ impl CPU {
                     _ => self.pc + 1,
                 }
             }
+
             Instruction::SUB(target) => {
                 match target {
                     ArithmeticTarget::B    => self.reg.a = self.sub(self.reg.b),
@@ -60,6 +61,7 @@ impl CPU {
                     _ => self.pc + 1,
                 }
             }
+
             Instruction::AND(target) => {
                 match target {
                     ArithmeticTarget::B    => self.reg.a = self.and(self.reg.b),
@@ -79,6 +81,7 @@ impl CPU {
                     _ => self.pc + 1,
                 }
             }
+
             Instruction::OR(target) => {
                 match target {
                     ArithmeticTarget::B    => self.reg.a = self.or(self.reg.b),
@@ -98,6 +101,7 @@ impl CPU {
                     _ => self.pc + 1,
                 }
             }
+
             Instruction::ADC(target) => {
                 match target {
                     ArithmeticTarget::B    => self.reg.a = self.adc(self.reg.b),
@@ -117,6 +121,7 @@ impl CPU {
                     _ => self.pc + 1,
                 }
             }
+
             Instruction::SBC(target) => {
                 match target {
                     ArithmeticTarget::B    => self.reg.a = self.sbc(self.reg.b),
@@ -136,6 +141,7 @@ impl CPU {
                     _ => self.pc + 1,
                 }
             }
+
             Instruction::XOR(target) => {
                 match target {
                     ArithmeticTarget::B    => self.reg.a = self.xor(self.reg.b),
@@ -155,6 +161,7 @@ impl CPU {
                     _ => self.pc + 1,
                 }
             }
+
             Instruction::CP(target) => {
                 match target {
                     // perform subtract but only update flags
@@ -175,6 +182,7 @@ impl CPU {
                     _ => self.pc + 1,
                 }
             }
+
             Instruction::INC(target) => {
                 match target {
                     ArithmeticTarget::B    => self.reg.b = self.inc(self.reg.b),
@@ -192,6 +200,7 @@ impl CPU {
                 };
                 _ => self.pc + 1
             }
+
             Instruction::DEC(target) => {
                 match target {
                     ArithmeticTarget::B    => self.reg.b = self.dec(self.reg.b),
@@ -381,6 +390,34 @@ impl CPU {
                     }
                 }
             }
+
+            Instruction::JP(condition, addr_type) => {
+                if (match condition {
+                    JumpCondition::NZ   => !self.reg.f.zero,
+                    JumpCondition::NC   => !self.reg.f.carry,
+                    JumpCondition::Z    => self.reg.f.zero,
+                    JumpCondition::C    => self.reg.f.carry,
+                    JumpCondition::None => true,
+                })
+                {
+                    // taking jump, return next pc
+                    match addr {
+                        JumpAddr::IMM16 => (self.bus.read_byte(self.pc + 1) as u16) | ((self.bus.read_byte(self.pc + 2) << 8) as u16),
+                        JumpAddr::HL    => self.reg.get_hl(),
+                        JumpAddr::REL   => self.pc.wrapping_add(self.bus.read_byte(self.pc + 1) as u16),
+                    };
+                }
+                else {
+                    // didn't jump, get next pc
+                    match addr_type {
+                        JumpAddr::IMM16 => self.pc + 3,
+                        JumpAddr::HL    => self.pc + 1,
+                        JumpAddr::REL   => self.pc + 2,
+                    }
+                }
+                _ => self.pc + 1
+            }
+
             _ => { self.pc }, // TODO: implement other instructions
         }
     }
