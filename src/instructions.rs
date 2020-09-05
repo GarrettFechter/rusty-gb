@@ -1,3 +1,4 @@
+// Two letter registers and C_A8 are treated as addresses, in addition to A8 and A16
 enum LoadByteDestination {
     A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16
 }
@@ -6,17 +7,32 @@ enum LoadByteSource {
     A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8
 }
 
+enum LoadWordDestination {
+    BC, DE, HL, SP, PUSH, AF, A16
+}
+
+enum LoadWordSource {
+    BC, DE, HL, SP, POP, AF, IMM16, SP_IMM,
+}
+
 enum LoadType {
-    Byte(LoadDestination, LoadSource),
+    Byte(LoadByteDestination, LoadByteSource),
+    Word(LoadWordDestination, LoadWordSource), // 2 bytes
 }
 
 enum Instruction {
-    ADD(ArithmeticTarget),
-    LD(LoadType),
+    ADD(ArithmeticTarget), LD(LoadType),
 }
 
 impl Instruction {
-    fn from_byte(byte: u8) -> Option<Instruction> {
+    fn from_byte(byte: u8, prefixed: bool) -> Option<Instruction> {
+        if prefixed {
+            Instruction::from_byte_prefixed(byte)
+        } else {
+            Instruction::from_byte_not_prefixed(byte)
+        }
+    }
+    fn from_byte_not_prefixed(byte: u8) -> Option<Instruction> {
         match byte {
             0x13 => Some(Instruction::INC(IncDecTarget::DE)),
 
@@ -117,8 +133,30 @@ impl Instruction {
 
             0xEA => Some(Instruction::LD(LoadType::Byte(LoadByteDestination::A16, LoadByteSource::A))),
             0xFA => Some(Instruction::LD(LoadType::Byte(LoadByteDestination::A, LoadByteSource::A16))),
+
+            // 16 bit loads
+
+            0x01 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::BC, LoadWordSource::IMM16))),
+            0x21 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::DE, LoadWordSource::IMM16))),
+            0x31 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::HL, LoadWordSource::IMM16))),
+            0x41 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::SP, LoadWordSource::IMM16))),
+
+            0xC1 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::BC, LoadWordSource::POP))),
+            0xD1 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::DE, LoadWordSource::POP))),
+            0xE1 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::HL, LoadWordSource::POP))),
+            0xF1 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::AF, LoadWordSource::POP))),
+
+            0x08 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::A16, LoadWordSource::SP))),
+            0xF8 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::HL, LoadWordSource::SP_IMM))),
+            0xF9 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::SP, LoadWordSource::HL))),
+
             // TODO: HALT at 0x76
-            _    => None // TODO: Implement a bajillion more opcodes
+            _    => None // TODO: Implement no-prefix opcodes
+        }
+    }
+    fn from_byte_prefixed(byte: u8) -> Option<Instruction> {
+        match byte {
+            _ => None // TODO: Implement prefixed opcodes
         }
     }
 }

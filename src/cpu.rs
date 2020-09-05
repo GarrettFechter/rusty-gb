@@ -35,100 +35,152 @@ impl CPU {
             }
             Instruction::LD(load_type) => {
                 match load_type {
+                    LoadType::Word(dest, source) => {
+                        let source_value = match source {
+                            LoadWordSource::BC  => self.reg.get_bc(),
+                            LoadWordSource::DE  => self.reg.get_de(),
+                            LoadWordSource::HL  => self.reg.get_hl(),
+                            LoadWordSource::SP  => self.sp,
+                            LoadWordSource::POP => {
+                                let value = ((self.bus.read_byte(self.sp + 1)) as u16 << 8) | self.bus.read_byte(self.sp) as u16;
+                                self.sp += 2;
+                                value
+                            }
+                            LoadWordSource::AF => self.reg.get_af(),
+                            LoadWordSource::IMM16 => {
+                                self.bus.read_byte(self.pc + 1) as u16 | (self.bus.read_byte(self.pc + 2) as u16 << 8)
+                            }
+                            // there was a little ambiguity on the LDHL SP, e aka LD HL,SP+e
+                            // instruction, but decided this was correct
+                            LoadWordSource::SP_IMM => self.sp.wrapping_add(self.bus.read_byte(self.pc + 1) as u8)
+                            _ => panic!("Unsupported LoadWordSource"),
+                        }
+
+                        match dest {
+                            LoadWordDestination::BC => self.reg.set_bc(source_value),
+                            LoadWordDestination::DE => self.reg.set_de(source_value),
+                            LoadWordDestination::HL => self.reg.set_hl(source_value),
+                            LoadWordDestination::SP => self.reg.sp = source_value,
+                            LoadWordDestination::PUSH => {
+                                self.bus.write_byte(self.reg.sp, source_value);
+                                self.sp += 1;
+                            },
+                            LoadWordDestination::AF => self.reg.set_af(source_value),
+                            LoadWordDestination::A16 => {
+                                let addr = self.bus.read_byte(pc + 1) as u16 | (self.bus.read_byte(pc + 2) as u16 << 8);
+                                self.bus.write_byte(addr, source_value);
+                            }
+                        }
+
+                        // return next pc based on instruction length
+                        match (dest, source) {
+                            // should be no overlap
+                            (_, LoadWordSource::IMM16) |
+                            (LoadWordDestination::A16, _) => self.pc.wrapping_add(3),
+
+                            (_, LoadWordSource::SP_IMM) => self.pc.wrapping_add(2),
+
+                            (_, _) => self.pc.wrapping_add(1),
+                        }
+                    }
                     LoadType::Byte(dest, source) => {
                         let source_value = match source {
-                            LoadSource::A    => self.reg.a,
-                            LoadSource::B    => self.reg.b,
-                            LoadSource::C    => self.reg.c,
-                            LoadSource::D    => self.reg.d,
-                            LoadSource::E    => self.reg.e,
-                            LoadSource::H    => self.reg.h,
-                            LoadSource::L    => self.reg.l,
-                            LoadSource::HLI  => {
+                            LoadByteSource::A    => self.reg.a,
+                            LoadByteSource::B    => self.reg.b,
+                            LoadByteSource::C    => self.reg.c,
+                            LoadByteSource::D    => self.reg.d,
+                            LoadByteSource::E    => self.reg.e,
+                            LoadByteSource::H    => self.reg.h,
+                            LoadByteSource::L    => self.reg.l,
+                            LoadByteSource::HLI  => {
                                 let s = self.bus.read_byte(self.reg.h << 8 || self.reg.l);
                                 self.reg.set_hl(self.reg.get_hl().wrapping_add(1));
                                 s
                             },
-                            LoadSource::HLD  => {
+                            LoadByteSource::HLD  => {
                                 let s = self.bus.read_byte(self.reg.h << 8 || self.reg.l);
                                 self.reg.set_hl(self.reg.get_hl().wrapping_sub(1));
                                 s
                             },
-                            LoadSource::BC   => self.bus.read_byte(self.reg.get_bc()),
-                            LoadSource::DE   => self.bus.read_byte(self.reg.get_de()),
-                            LoadSource::HL   => self.bus.read_byte(self.reg.get_hl()),
-                            LoadSource::A8   => self.bus.read_byte(0xFF00 | self.bus.read_byte(self.pc + 1)),
-                            LoadSource::C_A8   => self.bus.read_byte(0xFF00 | self.reg.c),
-                            LoadSource::A16  => {
+                            LoadByteSource::BC   => self.bus.read_byte(self.reg.get_bc()),
+                            LoadByteSource::DE   => self.bus.read_byte(self.reg.get_de()),
+                            LoadByteSource::HL   => self.bus.read_byte(self.reg.get_hl()),
+                            LoadByteSource::A8   => self.bus.read_byte(0xFF00 | self.bus.read_byte(self.pc + 1)),
+                            LoadByteSource::C_A8   => self.bus.read_byte(0xFF00 | self.reg.c),
+                            LoadByteSource::A16  => {
                                 // pc+1 holds LSB, pc+2 holds MSB
                                 let addr = self.bus.read_byte(self.pc + 1) | (self.bus.read_byte(self.pc + 2) << 4);
                                 self.bus.read_byte(addr)
                             },
-                            LoadSource::IMM8 => self.bus.read_byte(self.pc + 1),
+                            LoadByteSource::IMM8 => self.bus.read_byte(self.pc + 1),
                         }
 
                         match dest {
-                            LoadDestination::A   => self.reg.a = source_value,
-                            LoadDestination::B   => self.reg.b = source_value,
-                            LoadDestination::C   => self.reg.c = source_value,
-                            LoadDestination::D   => self.reg.d = source_value,
-                            LoadDestination::E   => self.reg.e = source_value,
-                            LoadDestination::H   => self.reg.h = source_value,
-                            LoadDestination::L   => self.reg.l = source_value,
-                            LoadDestination::HLI => {
+                            LoadByteDestination::A   => self.reg.a = source_value,
+                            LoadByteDestination::B   => self.reg.b = source_value,
+                            LoadByteDestination::C   => self.reg.c = source_value,
+                            LoadByteDestination::D   => self.reg.d = source_value,
+                            LoadByteDestination::E   => self.reg.e = source_value,
+                            LoadByteDestination::H   => self.reg.h = source_value,
+                            LoadByteDestination::L   => self.reg.l = source_value,
+                            LoadByteDestination::HLI => {
                                 self.bus.write_byte(self.reg.get_hl, source_value);
                                 self.reg.set_hl(self.reg.get_hl().wrapping_add(1));
                             },
-                            LoadDestination::HLD => {
+                            LoadByteDestination::HLD => {
                                 self.bus.write_byte(self.reg.get_hl, source_value);
                                 self.reg.set_hl(self.reg.get_hl().wrapping_sub(1));
                             },
-                            LoadDestination::BC  => self.bus.write_byte(self.reg.get_bc(), source_value),
-                            LoadDestination::DE  => self.bus.write_byte(self.reg.get_de(), source_value),
-                            LoadDestination::HL  => self.bus.write_byte(self.reg.get_hl(), source_value),
-                            LoadDestination::A8  => {
+                            LoadByteDestination::BC  => self.bus.write_byte(self.reg.get_bc(), source_value),
+                            LoadByteDestination::DE  => self.bus.write_byte(self.reg.get_de(), source_value),
+                            LoadByteDestination::HL  => self.bus.write_byte(self.reg.get_hl(), source_value),
+                            LoadByteDestination::A8  => {
                                 let addr = 0xFF00 | self.bus.read_byte(self.pc + 1);
                                 self.bus.write_byte(addr, source_value),
-                            }
-                            LoadDestination::C_A8  => {
+                            },
+                            LoadByteDestination::C_A8  => {
                                 let addr = 0xFF00 | self.reg.c;
                                 self.bus.write_byte(addr, source_value),
-                            }
-                            LoadDestination::A16 => {
+                            },
+                            LoadByteDestination::A16 => {
                                 // pc+1 holds LSB, pc+2 holds MSB
                                 let addr = self.bus.read_byte(self.pc + 1) | (self.bus.read_byte(self.pc + 2) << 4);
                                 self.bus.write_byte(addr, source_value)
-                            }
+                            },
                         }
 
                         match (dest, source) {
                             // should be no overlap
+                            (_, LoadByteSource::A8)   |
+                            (_, LoadByteSource::IMM8) |
+                            (LoadByteDestination::A8, _) => self.pc.wrapping_add(2),
 
-                            (_, LoadSource::A8)   |
-                            (_, LoadSource::IMM8) |
-                            (LoadDestination::A8, _) => self.pc.wrapping_add(2),
-
-                            (_, LoadSource::A16) |
-                            (LoadDestination::A16, _) => self.pc.wrapping_add(3),
+                            (_, LoadByteSource::A16) |
+                            (LoadByteDestination::A16, _) => self.pc.wrapping_add(3),
 
                             (_, _) => self.pc.wrapping_add(1),
                         }
                     }
                 }
             }
-            }
-            _ => { self.pc } // TODO: implement other instructions
+            _ => { self.pc }, // TODO: implement other instructions
         }
     }
 
     // Reads and executes instruction at pc
     fn step(&mut self) {
         let mut instruction_byte = self.bus.read_byte(pc);
+        let prefixed = instruction_byte == 0xCB;
 
-        let next_pc = if let Some(instruction) = Instruction::from_byte(instruction_byte) {
+        if prefixed {
+            instruction_byte = self.bus.read_byte(pc + 1);
+        }
+
+        let next_pc = if let Some(instruction) = Instruction::from_byte(instruction_byte, prefixed) {
             self.execute(instruction)
         } else {
-            panic!("Unknown instruction 0x{:x}", instruction_byte);
+            let description = format!("0x{}{:x}", if prefixed { "CB" } else { "" }, instruction_byte);
+            panic!("Unknown instruction {}", description);
         };
 
         self.pc = next_pc;
