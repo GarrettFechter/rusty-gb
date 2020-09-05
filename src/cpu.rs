@@ -35,7 +35,7 @@ impl CPU {
                     ArithmeticTarget::IMM8 => self.reg.a = self.add(self.bus.read_byte(self.pc + 1)),
                     _ => panic!("Undefined SUB ArithmeticTarget"),
                 };
-                // return new PC value
+                // return next PC value
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -54,7 +54,7 @@ impl CPU {
                     ArithmeticTarget::IMM8 => self.reg.a = self.sub(self.bus.read_byte(self.pc + 1)),
                     _ => panic!("Undefined SUB ArithmeticTarget"),
                 };
-                // return new PC value
+                // return next PC value
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -73,7 +73,7 @@ impl CPU {
                     ArithmeticTarget::IMM8 => self.reg.a = self.and(self.bus.read_byte(self.pc + 1)),
                     _ => panic!("Undefined AND ArithmeticTarget"),
                 };
-                // return new PC value
+                // return next PC value
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -92,7 +92,7 @@ impl CPU {
                     ArithmeticTarget::IMM8 => self.reg.a = self.or(self.bus.read_byte(self.pc + 1)),
                     _ => panic!("Undefined OR ArithmeticTarget"),
                 };
-                // return new PC value
+                // return next PC value
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -111,7 +111,7 @@ impl CPU {
                     ArithmeticTarget::IMM8 => self.reg.a = self.adc(self.bus.read_byte(self.pc + 1)),
                     _ => panic!("Undefined ADC ArithmeticTarget"),
                 };
-                // return new PC value
+                // return next PC value
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -130,7 +130,7 @@ impl CPU {
                     ArithmeticTarget::IMM8 => self.reg.a = self.sbc(self.bus.read_byte(self.pc + 1)),
                     _ => panic!("Undefined SBC ArithmeticTarget"),
                 };
-                // return new PC value
+                // return next PC value
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -149,7 +149,7 @@ impl CPU {
                     ArithmeticTarget::IMM8 => self.reg.a = self.xor(self.bus.read_byte(self.pc + 1)),
                     _ => panic!("Undefined XOR ArithmeticTarget"),
                 };
-                // return new PC value
+                // return next PC value
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -169,7 +169,7 @@ impl CPU {
                     ArithmeticTarget::IMM8 => self.sub(self.bus.read_byte(self.pc + 1)),
                     _ => panic!("Undefined CP ArithmeticTarget"),
                 };
-                // return new PC value
+                // return next PC value
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -209,6 +209,48 @@ impl CPU {
                 };
                 _ => self.pc + 1
             }
+
+            Instruction::INC16(target) => {
+                match target {
+                    ArithmeticTarget::BC => self.reg.set_bc(self.reg.get_bc().wrapping_add(1)),
+                    ArithmeticTarget::DE => self.reg.set_de(self.reg.get_de().wrapping_add(1)),
+                    ArithmeticTarget::HL => self.reg.set_hl(self.reg.get_hl().wrapping_add(1)),
+                    ArithmeticTarget::SP => self.sp = self.sp.wrapping_add(1),
+                    _ => panic!("Undefined INC16 ArithmeticTarget"),
+                };
+                _ => self.pc + 1
+            }
+
+            Instruction::ADD16(target) => {
+                match target {
+                    ArithmeticTarget::BC      => self.reg.set_hl(self.add16(self.reg.get_hl(), self.reg.get_bc())),
+                    ArithmeticTarget::DE      => self.reg.set_hl(self.add16(self.reg.get_hl(), self.reg.get_de())),
+                    ArithmeticTarget::HL      => self.reg.set_hl(self.add16(self.reg.get_hl(), self.reg.get_hl())),
+                    ArithmeticTarget::SP      => self.reg.set_hl(self.add16(self.reg.get_hl(), self.sp)),
+                    ArithmeticTarget::SP_IMM  => {
+                        let imm: i8 = self.bus.read_byte(pc + 1) as i8;
+                        self.sp = self.sp.wrapping_add(imm as u16);
+                    }
+                    _ => panic!("Undefined ADD16 ArithmeticTarget"),
+                };
+                // return next PC value
+                match target {
+                    ArithmeticTarget::SP_IMM => self.pc + 2,
+                    _ => self.pc + 1,
+                }
+            }
+
+            Instruction::DEC16(target) => {
+                match target {
+                    ArithmeticTarget::BC => self.reg.set_bc(self.reg.get_bc().wrapping_sub(1)),
+                    ArithmeticTarget::DE => self.reg.set_de(self.reg.get_de().wrapping_sub(1)),
+                    ArithmeticTarget::HL => self.reg.set_hl(self.reg.get_hl().wrapping_sub(1)),
+                    ArithmeticTarget::SP => self.sp = self.sp.wrapping_sub(1),
+                    _ => panic!("Undefined DEC16 ArithmeticTarget"),
+                };
+                _ => self.pc + 1
+            }
+
             Instruction::LD(load_type) => {
                 match load_type {
                     LoadType::Word(dest, source) => {
@@ -221,14 +263,14 @@ impl CPU {
                                 let value = ((self.bus.read_byte(self.sp + 1)) as u16 << 8) | self.bus.read_byte(self.sp) as u16;
                                 self.sp += 2;
                                 value
-                            }
+                            },
                             LoadWordSource::AF => self.reg.get_af(),
                             LoadWordSource::IMM16 => {
                                 self.bus.read_byte(self.pc + 1) as u16 | (self.bus.read_byte(self.pc + 2) as u16 << 8)
-                            }
+                            },
                             // there was a little ambiguity on the LDHL SP, e aka LD HL,SP+e
                             // instruction, but decided this was correct
-                            LoadWordSource::SP_IMM => self.sp.wrapping_add(self.bus.read_byte(self.pc + 1) as u8)
+                            LoadWordSource::SP_IMM => self.sp.wrapping_add(self.bus.read_byte(self.pc + 1) as u8),
                             _ => panic!("Unsupported LoadWordSource"),
                         }
 
@@ -368,6 +410,16 @@ impl CPU {
         self.reg.f.zero = new_value == 0;
         self.reg.f.subtract = false;
         self.reg.f.half_carry = (self.reg.a & 0xF) + (value & 0xF) > 0xF;
+        self.reg.f.carry = did_overflow;
+        new_value
+    }
+
+    // Return value1 + value2 and update flags: - 0 H C
+    fn add16(&mut self, v1: u16, v2: u16) -> u16 {
+        let (new_value, did_overflow) = v1.overflowing_add(v2);
+        self.reg.f.subtract = false;
+        // here, half carry is set if carry comes out of bit 11
+        self.reg.f.half_carry = (v1 & 0xFFF) + (v2 & 0xFFF) > 0xFFF;
         self.reg.f.carry = did_overflow;
         new_value
     }

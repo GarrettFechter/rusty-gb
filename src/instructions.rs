@@ -1,12 +1,14 @@
-// Two letter registers and C_A8 are treated as addresses, in addition to A8 and A16
+// Two letter registers, C_A8, A8, A16 are treated as addresses
 enum LoadByteDestination {
     A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16
 }
 
+// Two letter registers, C_A8, A8, A16 are treated as addresses
 enum LoadByteSource {
     A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8
 }
 
+// Only A16 treated as address
 enum LoadWordDestination {
     BC, DE, HL, SP, PUSH, AF, A16
 }
@@ -20,8 +22,13 @@ enum LoadType {
     Word(LoadWordDestination, LoadWordSource), // 2 bytes
 }
 
+// HL is treated as address
 enum ArithmeticTarget {
     B, C, D, E, H, L, HL, A, IMM8,
+}
+
+enum ArithmeticTarget16 {
+    BC, DE, HL, SP, SP_IMM,
 }
 
 enum Instruction {
@@ -33,6 +40,9 @@ enum Instruction {
     SBC(ArithmeticTarget),
     XOR(ArithmeticTarget),
     CP(ArithmeticTarget),
+    INC16(ArithmeticTarget16),
+    ADD16(ArithmeticTarget16),
+    DEC16(ArithmeticTarget16),
     LD(LoadType),
 }
 
@@ -265,6 +275,25 @@ impl Instruction {
             0xDE => Some(Instruction::SBC(ArithmeticTarget::IMM8));
             0xEE => Some(Instruction::XOR(ArithmeticTarget::IMM8));
             0xFE => Some(Instruction::CP(ArithmeticTarget::IMM8));
+
+            // 16 bit arithmetic
+
+            0x03 => Some(Instruction::INC16(ArithmeticTarget16::BC));
+            0x13 => Some(Instruction::INC16(ArithmeticTarget16::DE));
+            0x23 => Some(Instruction::INC16(ArithmeticTarget16::HL));
+            0x33 => Some(Instruction::INC16(ArithmeticTarget16::SP));
+
+            0x09 => Some(Instruction::ADD16(ArithmeticTarget16::BC));
+            0x19 => Some(Instruction::ADD16(ArithmeticTarget16::DE));
+            0x29 => Some(Instruction::ADD16(ArithmeticTarget16::HL));
+            0x39 => Some(Instruction::ADD16(ArithmeticTarget16::SP));
+
+            0x0B => Some(Instruction::ADD16(ArithmeticTarget16::BC));
+            0x1B => Some(Instruction::ADD16(ArithmeticTarget16::DE));
+            0x2B => Some(Instruction::ADD16(ArithmeticTarget16::HL));
+            0x3B => Some(Instruction::ADD16(ArithmeticTarget16::SP));
+
+            0xE8 => Some(Instruction::ADD16(ArithmeticTarget16::SP_IMM));
 
             // TODO: HALT at 0x76
             _    => None // TODO: Implement no-prefix opcodes
