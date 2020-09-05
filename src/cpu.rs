@@ -24,14 +24,190 @@ impl CPU {
         match instruction {
             Instruction::ADD(target) => {
                 match target {
-                    ArithmeticTarget::C => {
-                        let value = self.reg.c;
-                        let new_value = self.add(value);
-                        self.reg.a = new_value;
-                        self.pc.wrapping_add(1)
-                    }
-                    _ => { self.pc } // TODO: implement ADD on other registers
+                    ArithmeticTarget::B    => self.reg.a = self.add(self.reg.b),
+                    ArithmeticTarget::C    => self.reg.a = self.add(self.reg.c),
+                    ArithmeticTarget::D    => self.reg.a = self.add(self.reg.d),
+                    ArithmeticTarget::E    => self.reg.a = self.add(self.reg.e),
+                    ArithmeticTarget::H    => self.reg.a = self.add(self.reg.h),
+                    ArithmeticTarget::L    => self.reg.a = self.add(self.reg.l),
+                    ArithmeticTarget::HL   => self.reg.a = self.add(self.bus.read_byte(self.reg.get_hl())),
+                    ArithmeticTarget::A    => self.reg.a = self.add(self.reg.a),
+                    ArithmeticTarget::IMM8 => self.reg.a = self.add(self.bus.read_byte(self.pc + 1)),
+                    _ => panic!("Undefined SUB ArithmeticTarget"),
+                };
+                // return new PC value
+                match target {
+                    ArithmeticTarget::IMM8 => self.pc + 2,
+                    _ => self.pc + 1,
                 }
+            }
+            Instruction::SUB(target) => {
+                match target {
+                    ArithmeticTarget::B    => self.reg.a = self.sub(self.reg.b),
+                    ArithmeticTarget::C    => self.reg.a = self.sub(self.reg.c),
+                    ArithmeticTarget::D    => self.reg.a = self.sub(self.reg.d),
+                    ArithmeticTarget::E    => self.reg.a = self.sub(self.reg.e),
+                    ArithmeticTarget::H    => self.reg.a = self.sub(self.reg.h),
+                    ArithmeticTarget::L    => self.reg.a = self.sub(self.reg.l),
+                    ArithmeticTarget::HL   => self.reg.a = self.sub(self.bus.read_byte(self.reg.get_hl())),
+                    ArithmeticTarget::A    => self.reg.a = self.sub(self.reg.a),
+                    ArithmeticTarget::IMM8 => self.reg.a = self.sub(self.bus.read_byte(self.pc + 1)),
+                    _ => panic!("Undefined SUB ArithmeticTarget"),
+                };
+                // return new PC value
+                match target {
+                    ArithmeticTarget::IMM8 => self.pc + 2,
+                    _ => self.pc + 1,
+                }
+            }
+            Instruction::AND(target) => {
+                match target {
+                    ArithmeticTarget::B    => self.reg.a = self.and(self.reg.b),
+                    ArithmeticTarget::C    => self.reg.a = self.and(self.reg.c),
+                    ArithmeticTarget::D    => self.reg.a = self.and(self.reg.d),
+                    ArithmeticTarget::E    => self.reg.a = self.and(self.reg.e),
+                    ArithmeticTarget::H    => self.reg.a = self.and(self.reg.h),
+                    ArithmeticTarget::L    => self.reg.a = self.and(self.reg.l),
+                    ArithmeticTarget::HL   => self.reg.a = self.and(self.bus.read_byte(self.reg.get_hl())),
+                    ArithmeticTarget::A    => self.reg.a = self.and(self.reg.a),
+                    ArithmeticTarget::IMM8 => self.reg.a = self.and(self.bus.read_byte(self.pc + 1)),
+                    _ => panic!("Undefined AND ArithmeticTarget"),
+                };
+                // return new PC value
+                match target {
+                    ArithmeticTarget::IMM8 => self.pc + 2,
+                    _ => self.pc + 1,
+                }
+            }
+            Instruction::OR(target) => {
+                match target {
+                    ArithmeticTarget::B    => self.reg.a = self.or(self.reg.b),
+                    ArithmeticTarget::C    => self.reg.a = self.or(self.reg.c),
+                    ArithmeticTarget::D    => self.reg.a = self.or(self.reg.d),
+                    ArithmeticTarget::E    => self.reg.a = self.or(self.reg.e),
+                    ArithmeticTarget::H    => self.reg.a = self.or(self.reg.h),
+                    ArithmeticTarget::L    => self.reg.a = self.or(self.reg.l),
+                    ArithmeticTarget::HL   => self.reg.a = self.or(self.bus.read_byte(self.reg.get_hl())),
+                    ArithmeticTarget::A    => self.reg.a = self.or(self.reg.a),
+                    ArithmeticTarget::IMM8 => self.reg.a = self.or(self.bus.read_byte(self.pc + 1)),
+                    _ => panic!("Undefined OR ArithmeticTarget"),
+                };
+                // return new PC value
+                match target {
+                    ArithmeticTarget::IMM8 => self.pc + 2,
+                    _ => self.pc + 1,
+                }
+            }
+            Instruction::ADC(target) => {
+                match target {
+                    ArithmeticTarget::B    => self.reg.a = self.adc(self.reg.b),
+                    ArithmeticTarget::C    => self.reg.a = self.adc(self.reg.c),
+                    ArithmeticTarget::D    => self.reg.a = self.adc(self.reg.d),
+                    ArithmeticTarget::E    => self.reg.a = self.adc(self.reg.e),
+                    ArithmeticTarget::H    => self.reg.a = self.adc(self.reg.h),
+                    ArithmeticTarget::L    => self.reg.a = self.adc(self.reg.l),
+                    ArithmeticTarget::HL   => self.reg.a = self.adc(self.bus.read_byte(self.reg.get_hl())),
+                    ArithmeticTarget::A    => self.reg.a = self.adc(self.reg.a),
+                    ArithmeticTarget::IMM8 => self.reg.a = self.adc(self.bus.read_byte(self.pc + 1)),
+                    _ => panic!("Undefined ADC ArithmeticTarget"),
+                };
+                // return new PC value
+                match target {
+                    ArithmeticTarget::IMM8 => self.pc + 2,
+                    _ => self.pc + 1,
+                }
+            }
+            Instruction::SBC(target) => {
+                match target {
+                    ArithmeticTarget::B    => self.reg.a = self.sbc(self.reg.b),
+                    ArithmeticTarget::C    => self.reg.a = self.sbc(self.reg.c),
+                    ArithmeticTarget::D    => self.reg.a = self.sbc(self.reg.d),
+                    ArithmeticTarget::E    => self.reg.a = self.sbc(self.reg.e),
+                    ArithmeticTarget::H    => self.reg.a = self.sbc(self.reg.h),
+                    ArithmeticTarget::L    => self.reg.a = self.sbc(self.reg.l),
+                    ArithmeticTarget::HL   => self.reg.a = self.sbc(self.bus.read_byte(self.reg.get_hl())),
+                    ArithmeticTarget::A    => self.reg.a = self.sbc(self.reg.a),
+                    ArithmeticTarget::IMM8 => self.reg.a = self.sbc(self.bus.read_byte(self.pc + 1)),
+                    _ => panic!("Undefined SBC ArithmeticTarget"),
+                };
+                // return new PC value
+                match target {
+                    ArithmeticTarget::IMM8 => self.pc + 2,
+                    _ => self.pc + 1,
+                }
+            }
+            Instruction::XOR(target) => {
+                match target {
+                    ArithmeticTarget::B    => self.reg.a = self.xor(self.reg.b),
+                    ArithmeticTarget::C    => self.reg.a = self.xor(self.reg.c),
+                    ArithmeticTarget::D    => self.reg.a = self.xor(self.reg.d),
+                    ArithmeticTarget::E    => self.reg.a = self.xor(self.reg.e),
+                    ArithmeticTarget::H    => self.reg.a = self.xor(self.reg.h),
+                    ArithmeticTarget::L    => self.reg.a = self.xor(self.reg.l),
+                    ArithmeticTarget::HL   => self.reg.a = self.xor(self.bus.read_byte(self.reg.get_hl())),
+                    ArithmeticTarget::A    => self.reg.a = self.xor(self.reg.a),
+                    ArithmeticTarget::IMM8 => self.reg.a = self.xor(self.bus.read_byte(self.pc + 1)),
+                    _ => panic!("Undefined XOR ArithmeticTarget"),
+                };
+                // return new PC value
+                match target {
+                    ArithmeticTarget::IMM8 => self.pc + 2,
+                    _ => self.pc + 1,
+                }
+            }
+            Instruction::CP(target) => {
+                match target {
+                    // perform subtract but only update flags
+                    ArithmeticTarget::B    => self.sub(self.reg.b),
+                    ArithmeticTarget::C    => self.sub(self.reg.c),
+                    ArithmeticTarget::D    => self.sub(self.reg.d),
+                    ArithmeticTarget::E    => self.sub(self.reg.e),
+                    ArithmeticTarget::H    => self.sub(self.reg.h),
+                    ArithmeticTarget::L    => self.sub(self.reg.l),
+                    ArithmeticTarget::HL   => self.sub(self.bus.read_byte(self.reg.get_hl())),
+                    ArithmeticTarget::A    => self.sub(self.reg.a),
+                    ArithmeticTarget::IMM8 => self.sub(self.bus.read_byte(self.pc + 1)),
+                    _ => panic!("Undefined CP ArithmeticTarget"),
+                };
+                // return new PC value
+                match target {
+                    ArithmeticTarget::IMM8 => self.pc + 2,
+                    _ => self.pc + 1,
+                }
+            }
+            Instruction::INC(target) => {
+                match target {
+                    ArithmeticTarget::B    => self.reg.b = self.inc(self.reg.b),
+                    ArithmeticTarget::C    => self.reg.c = self.inc(self.reg.c),
+                    ArithmeticTarget::D    => self.reg.d = self.inc(self.reg.d),
+                    ArithmeticTarget::E    => self.reg.e = self.inc(self.reg.e),
+                    ArithmeticTarget::H    => self.reg.h = self.inc(self.reg.h),
+                    ArithmeticTarget::L    => self.reg.l = self.inc(self.reg.l),
+                    ArithmeticTarget::HL   => {
+                        let addr = self.reg.get_hl();
+                        self.bus.write_byte(addr, self.inc(self.bus.read_byte(addr));
+                    },
+                    ArithmeticTarget::A    => self.reg.a = self.inc(self.reg.a),
+                    _ => panic!("Undefined INC ArithmeticTarget"),
+                };
+                _ => self.pc + 1
+            }
+            Instruction::DEC(target) => {
+                match target {
+                    ArithmeticTarget::B    => self.reg.b = self.dec(self.reg.b),
+                    ArithmeticTarget::C    => self.reg.c = self.dec(self.reg.c),
+                    ArithmeticTarget::D    => self.reg.d = self.dec(self.reg.d),
+                    ArithmeticTarget::E    => self.reg.e = self.dec(self.reg.e),
+                    ArithmeticTarget::H    => self.reg.h = self.dec(self.reg.h),
+                    ArithmeticTarget::L    => self.reg.l = self.dec(self.reg.l),
+                    ArithmeticTarget::HL   => {
+                        let addr = self.reg.get_hl();
+                        self.bus.write_byte(addr, self.dec(self.bus.read_byte(addr));
+                    },
+                    ArithmeticTarget::A    => self.reg.a = self.dec(self.reg.a),
+                    _ => panic!("Undefined DEC ArithmeticTarget"),
+                };
+                _ => self.pc + 1
             }
             Instruction::LD(load_type) => {
                 match load_type {
@@ -186,12 +362,93 @@ impl CPU {
         self.pc = next_pc;
     }
 
+    // Return A + value and update flags: Z 0 H C
     fn add(&mut self, value: u8) -> u8 {
         let (new_value, did_overflow) = self.reg.a.overflowing_add(value);
         self.reg.f.zero = new_value == 0;
         self.reg.f.subtract = false;
-        self.reg.f.carry = did_overflow;
         self.reg.f.half_carry = (self.reg.a & 0xF) + (value & 0xF) > 0xF;
+        self.reg.f.carry = did_overflow;
+        new_value
+    }
+
+    // Return A + value + carry and update flags: Z 0 H C
+    fn adc(&mut self, value: u8) -> u8 {
+        let (first, did_overflow_first) = self.reg.a.overflowing_add(value);
+        let (second, did_overflow_second) = first.overflowing_add(self.reg.f.carry as u8);
+        self.reg.f.zero = second == 0;
+        self.reg.f.subtract = false;
+        self.reg.f.half_carry = (self.reg.a & 0xF) + (value & 0xF) + (self.reg.f.carry as u8) > 0xF;
+        self.reg.f.carry = did_overflow_first || did_overflow_second;
+        second
+    }
+
+    // Return A - value and update flags: Z 1 H C
+    fn sub(&mut self, value: u8) -> u8 {
+        let (new_value, did_overflow) = self.reg.a.overflowing_sub(value);
+        self.reg.f.zero = new_value == 0;
+        self.reg.f.subtract = true;
+        self.reg.f.half_carry = (self.reg.a & 0xF) < (value & 0xF);
+        self.reg.f.carry = did_overflow;
+        new_value
+    }
+
+    // Return A - value - carry and update flags: Z 1 H C
+    fn sbc(&mut self, value: u8) -> u8 {
+        let (first, did_overflow_first) = self.reg.a.overflowing_sub(value);
+        let (second, did_overflow_second) = first.overflowing_sub(self.reg.f.carry as u8);
+        self.reg.f.zero = second == 0;
+        self.reg.f.subtract = true;
+        self.reg.f.half_carry = (self.reg.a & 0xF) < (value & 0xF) + (self.reg.f.carry as u8);
+        self.reg.f.carry = did_overflow_first || did_overflow_second;
+        second
+    }
+
+    // Return A & value and update flags: Z 0 1 0
+    fn and(&mut self, value: u8) -> u8 {
+        let new_value = self.reg.a & value;
+        self.reg.f.zero = new_value == 0;
+        self.reg.f.subtract = false;
+        self.reg.f.half_carry = true;
+        self.reg.f.carry = false;
+        new_value
+    }
+
+    // Return A | value and update flags: Z 0 0 0
+    fn or(&mut self, value: u8) -> u8 {
+        let new_value = self.reg.a | value;
+        self.reg.f.zero = new_value == 0;
+        self.reg.f.subtract = false;
+        self.reg.f.half_carry = false;
+        self.reg.f.carry = false;
+        new_value
+    }
+
+    // Return A ^ value and update flags: Z 0 0 0
+    fn xor(&mut self, value: u8) -> u8 {
+        let new_value = self.reg.a ^ value;
+        self.reg.f.zero = new_value == 0;
+        self.reg.f.subtract = false;
+        self.reg.f.half_carry = false;
+        self.reg.f.carry = false;
+        new_value
+    }
+
+    // Return value + 1 and update flags: Z 0 H -
+    fn inc(&mut self, value: u8) -> u8 {
+        let (new_value, did_overflow) = value.overflowing_add(1);
+        self.reg.f.zero = new_value == 0;
+        self.reg.f.subtract = false;
+        self.reg.f.half_carry = value == 0xF;
+        new_value
+    }
+
+    // Return value - 1 and update flags: Z 1 H -
+    fn dec(&mut self, value: u8) -> u8 {
+        let (new_value, did_overflow) = value.overflowing_sub(1);
+        self.reg.f.zero = new_value == 0;
+        self.reg.f.subtract = true;
+        self.reg.f.half_carry = value & 0xF == 0;
         new_value
     }
 }
