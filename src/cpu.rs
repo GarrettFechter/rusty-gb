@@ -16,11 +16,17 @@ struct CPU {
     bus: MemoryBus,
     pc: u16,
     sp: u16,
+    interrupt_enable: bool,
+    is_halted: bool,
+    is_stopped: bool,
 }
 
 impl CPU {
     // Executes given instruction and returns next pc
-    fn execute(&mut self, instruction: Instruction) {
+    fn execute(&mut self, instruction: Instruction) -> u16 {
+        if (is_stopped || is_halted) {
+            return self.pc;
+        }
         match instruction {
             Instruction::ADD(target) => {
                 match target {
@@ -391,13 +397,72 @@ impl CPU {
                 }
             }
 
+            Instruction::CALL(condition) => {
+                if (match condition {
+                    ControlCondition::NZ   => !self.reg.f.zero,
+                    ControlCondition::NC   => !self.reg.f.carry,
+                    ControlCondition::Z    => self.reg.f.zero,
+                    ControlCondition::C    => self.reg.f.carry,
+                    ControlCondition::NONE => true,
+                })
+                {
+                    // save pc and return new pc
+                    let return_pc = self.pc + 3;
+                    self.push((return_pc >> 8) as u8);
+                    self.push((return_pc & 0xFF) as u8);
+                    self.bus.read_byte(self.pc + 1) as u16) | ((self.bus.read_byte(self.pc + 2) << 8) as u16)
+                }
+                else {
+                    self.pc + 3
+                }
+            }
+
+            Instruction::RET(condition) => {
+                if (match condition {
+                    ControlCondition::NZ      => !self.reg.f.zero,
+                    ControlCondition::NC      => !self.reg.f.carry,
+                    ControlCondition::Z       => self.reg.f.zero,
+                    ControlCondition::C       => self.reg.f.carry,
+                    ControlCondition::NONE    => true,
+                    ControlCondition::NONE_EI => {
+                        // TODO: unsure that interrupts should be enabled this early during RETI
+                        self.interrupt_enable = true;
+                        true
+                    }
+                })
+                {
+                    let pch = self.pop();
+                    let pcl = self.pop();
+                    (pch << 8) as u16 | (pcl as u16)
+                }
+                else {
+                    self.pc + 1
+                }
+            }
+
+            Instruction::RST(hvalue) => {
+                let value = match hvalue {
+                    RST_Value::h00 => 0x00,
+                    RST_Value::h10 => 0x10,
+                    RST_Value::h20 => 0x20,
+                    RST_Value::h30 => 0x30,
+                    RST_Value::h08 => 0x08,
+                    RST_Value::h18 => 0x18,
+                    RST_Value::h28 => 0x28,
+                    RST_Value::h38 => 0x38,
+                }
+                self.push(((self.sp - 1) >> 8) as u16);
+                self.push(((self.sp - 2) >> 8) as u16);
+                self.read_byte(self.pc + 1) as u16
+            }
+
             Instruction::JP(condition, addr_type) => {
                 if (match condition {
-                    JumpCondition::NZ   => !self.reg.f.zero,
-                    JumpCondition::NC   => !self.reg.f.carry,
-                    JumpCondition::Z    => self.reg.f.zero,
-                    JumpCondition::C    => self.reg.f.carry,
-                    JumpCondition::None => true,
+                    ControlCondition::NZ   => !self.reg.f.zero,
+                    ControlCondition::NC   => !self.reg.f.carry,
+                    ControlCondition::Z    => self.reg.f.zero,
+                    ControlCondition::C    => self.reg.f.carry,
+                    ControlCondition::NONE => true,
                 })
                 {
                     // taking jump, return next pc
@@ -416,6 +481,78 @@ impl CPU {
                     }
                 }
                 _ => self.pc + 1
+            }
+
+            Instruction::NOP => {
+                self.pc + 1
+            }
+
+            Instruction::STOP => {
+                self.is_stopped = true;
+                self.pc + 1
+            }
+
+            Instruction::HALT => {
+                self.is_halted = true;
+                self.pc + 1
+            }
+
+            Instruction::DI => {
+                self.interrupt_enable = false;
+                self.pc + 1
+            }
+
+            Instruction::EI => {
+                self.interrupt_enable = true;
+                self.pc + 1
+            }
+
+            Instruction::DAA => {
+                // Convert A to packed BCD and update flags: Z - 0 C
+                let mut carry = false;
+
+                if !self.reg.f.subtract {
+                    if self.reg.f.carry || self.reg.a > 0x99 {
+                        self.reg.a = self.reg.a.wrapping_add(0x60);
+                        carry = true;
+                    }
+                    if self.reg.f.half_carry || self.reg.a & 0x0f > 0x09 {
+                        self.reg.a = self.reg.a.wrapping_add(0x06);
+                    }
+                } else if self.reg.f.carry {
+                    carry = true;
+                    self.reg.a = self.reg.a.wrapping_add(if self.reg.f.half_carry { 0x9a } else { 0xa0 });
+                } else if self.reg.f.half_carry {
+                    self.reg.a = self.reg.a.wrapping_add(0xfa);
+                }
+                self.reg.f.zero = self.reg.a == 0;
+                self.reg.f.half_carry = false;
+                self.reg.f.carry = carry;
+                self.pc + 1
+            }
+
+            Instruction::CPL => {
+                // Invert A and update flags: - 1 1 -
+                self.reg.a ^= 0xFF;
+                self.reg.f.subtract = true;
+                self.reg.f.half_carry = true;
+                self.pc + 1
+            }
+
+            Instruction::CCF => {
+                // Invert carry flag and update flags: - 0 0 C
+                self.reg.f.subtract = false;
+                self.reg.f.half_carry = false;
+                self.reg.f.carry ^= 0x1;
+                self.pc + 1
+            }
+
+            Instruction::SCF => {
+                // Update flags: - 0 0 1
+                self.reg.f.subtract = false;
+                self.reg.f.half_carry = false;
+                self.reg.f.carry = true;
+                self.pc + 1
             }
 
             _ => { self.pc }, // TODO: implement other instructions
@@ -539,5 +676,15 @@ impl CPU {
         self.reg.f.subtract = true;
         self.reg.f.half_carry = value & 0xF == 0;
         new_value
+    }
+
+    fn push(&mut self, value: u8) {
+        self.write_byte(self.sp - 1, value);
+        self.sp -= 1;
+    }
+
+    fn pop(&mut self) -> u8 {
+        self.read_byte(self.sp);
+        self.sp += 1;
     }
 }

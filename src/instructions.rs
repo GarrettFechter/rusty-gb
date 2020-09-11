@@ -11,7 +11,7 @@ enum LoadByteSource {
 // Only A16 treated as address
 enum LoadWordDestination {
     BC, DE, HL, SP, PUSH, AF, A16
-}
+NONE
 
 enum LoadWordSource {
     BC, DE, HL, SP, POP, AF, IMM16, SP_IMM,
@@ -31,8 +31,12 @@ enum ArithmeticTarget16 {
     BC, DE, HL, SP, SP_IMM,
 }
 
-enum JumpCondition {
-    NZ, NC, Z, C, NONE,
+enum ControlCondition {
+    NZ, NC, Z, C, NONE, NONE_EI
+}
+
+enum RST_Value {
+    h00, h10, h20, h30, h08, h18, h28, h38,
 }
 
 enum JumpAddr {
@@ -52,7 +56,19 @@ enum Instruction {
     INC16(ArithmeticTarget16),
     ADD16(ArithmeticTarget16),
     DEC16(ArithmeticTarget16),
-    JP(JumpCondition, JumpAddr),
+    JP(ControlCondition, JumpAddr),
+    RET(ControlCondition),
+    CALL(ControlCondition),
+    RST(RST_Value),
+    NOP,
+    STOP,
+    HALT,
+    DI,
+    EI,
+    CPL,
+    CCF,
+    DAA,
+    SCF,
 }
 
 impl Instruction {
@@ -306,22 +322,63 @@ impl Instruction {
 
             // jumps (JP and JR are combined)
 
-            0x20 => Some(Instruction::JP(JumpCondition::NZ, JumpAddr::REL)),
-            0x30 => Some(Instruction::JP(JumpCondition::NC, JumpAddr::REL)),
+            0x20 => Some(Instruction::JP(ControlCondition::NZ, JumpAddr::REL)),
+            0x30 => Some(Instruction::JP(ControlCondition::NC, JumpAddr::REL)),
 
-            0x18 => Some(Instruction::JP(JumpCondition::NONE, JumpAddr::REL)),
-            0x28 => Some(Instruction::JP(JumpCondition::Z, JumpAddr::REL)),
-            0x38 => Some(Instruction::JP(JumpCondition::C, JumpAddr::REL)),
+            0x18 => Some(Instruction::JP(ControlCondition::NONE, JumpAddr::REL)),
+            0x28 => Some(Instruction::JP(ControlCondition::Z, JumpAddr::REL)),
+            0x38 => Some(Instruction::JP(ControlCondition::C, JumpAddr::REL)),
 
-            0xC2 => Some(Instruction::JP(JumpCondition::NZ, JumpAddr::IMM16)),
-            0xD2 => Some(Instruction::JP(JumpCondition::NC, JumpAddr::IMM16)),
-            0xC3 => Some(Instruction::JP(JumpCondition::NONE, JumpAddr::IMM16)),
+            0xC2 => Some(Instruction::JP(ControlCondition::NZ, JumpAddr::IMM16)),
+            0xD2 => Some(Instruction::JP(ControlCondition::NC, JumpAddr::IMM16)),
+            0xC3 => Some(Instruction::JP(ControlCondition::NONE, JumpAddr::IMM16)),
 
-            0xE9 => Some(Instruction::JP(JumpCondition::Z, JumpAddr::IMM16)),
-            0xCA => Some(Instruction::JP(JumpCondition::C, JumpAddr::IMM16)),
+            0xE9 => Some(Instruction::JP(ControlCondition::Z, JumpAddr::IMM16)),
+            0xCA => Some(Instruction::JP(ControlCondition::C, JumpAddr::IMM16)),
 
-            // TODO: HALT at 0x76
-            _    => None // TODO: Implement no-prefix opcodes
+            // calls
+
+            0xC4 => Some(Instruction::CALL(ControlCondition::NZ)),
+            0xD4 => Some(Instruction::CALL(ControlCondition::NC)),
+            0xCC => Some(Instruction::CALL(ControlCondition::Z)),
+            0xDC => Some(Instruction::CALL(ControlCondition::C)),
+            0xCD => Some(Instruction::CALL(ControlCondition::NONE)),
+
+            // returns
+
+            0xC0 => Some(Instruction::RET(ControlCondition::NZ),
+            0xD0 => Some(Instruction::RET(ControlCondition::NC),
+            0xC8 => Some(Instruction::RET(ControlCondition::Z),
+            0xD8 => Some(Instruction::RET(ControlCondition::C),
+            0xC9 => Some(Instruction::RET(ControlCondition::NONE),
+            0xD9 => Some(Instruction::RET(ControlCondition::C),
+            0xD9 => Some(Instruction::RET(ControlCondition::NONE_EI),
+
+            // resets
+
+            0xC7 => Some(Instruction::RST(RST_Value::h00)),
+            0xD7 => Some(Instruction::RST(RST_Value::h10)),
+            0xE7 => Some(Instruction::RST(RST_Value::h20)),
+            0xF7 => Some(Instruction::RST(RST_Value::h30)),
+            0xCF => Some(Instruction::RST(RST_Value::h08)),
+            0xDF => Some(Instruction::RST(RST_Value::h18)),
+            0xEF => Some(Instruction::RST(RST_Value::h28)),
+            0xFF => Some(Instruction::RST(RST_Value::h38)),
+
+            // misc
+
+            0x00 => Some(Instruction::NOP),
+            0x10 => Some(Instruction::STOP),
+            0x76 => Some(Instruction::HALT),
+            0xF3 => Some(Instruction::DI),
+            0xFB => Some(Instruction::EI),
+
+            0x27 => Some(Instruction::DAA),
+            0x37 => Some(Instruction::SCF),
+            0x2F => Some(Instruction::CPL),
+            0x3F => Some(Instruction::CCF),
+
+            _    => None,
         }
     }
     fn from_byte_prefixed(byte: u8) -> Option<Instruction> {
