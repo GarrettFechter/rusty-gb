@@ -1,51 +1,50 @@
-// Two letter registers, C_A8, A8, A16 are treated as addresses
-enum LoadByteDestination {
-    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16
+// Two letter registers, CA8, A8, A16 are treated as addresses
+pub enum LoadByteDestination {
+    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, CA8, A16,
 }
 
-// Two letter registers, C_A8, A8, A16 are treated as addresses
-enum LoadByteSource {
-    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8
+// Two letter registers, CA8, A8, A16 are treated as addresses
+pub enum LoadByteSource {
+    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, CA8, A16, IMM8,
 }
 
 // Only A16 treated as address
-enum LoadWordDestination {
-    BC, DE, HL, SP, PUSH, AF, A16
-NONE
-
-enum LoadWordSource {
-    BC, DE, HL, SP, POP, AF, IMM16, SP_IMM,
+pub enum LoadWordDestination {
+    BC, DE, HL, SP, PUSH, AF, A16,
 }
 
-enum LoadType {
+pub enum LoadWordSource {
+    BC, DE, HL, SP, POP, AF, IMM16, SPIMM,
+}
+
+pub enum LoadType {
     Byte(LoadByteDestination, LoadByteSource),
     Word(LoadWordDestination, LoadWordSource), // 2 bytes
 }
 
 // HL is treated as address
-enum ArithmeticTarget {
+pub enum ArithmeticTarget {
     B, C, D, E, H, L, HL, A, IMM8,
 }
 
-enum ArithmeticTarget16 {
-    BC, DE, HL, SP, SP_IMM,
+pub enum ArithmeticTarget16 {
+    BC, DE, HL, SP, SPIMM,
 }
 
-enum ControlCondition {
-    NZ, NC, Z, C, NONE, NONE_EI
+pub enum ControlCondition {
+    NZ, NC, Z, C, NONE, NONEEI,
 }
 
-enum RST_Value {
-    h00, h10, h20, h30, h08, h18, h28, h38,
+pub enum RstValue {
+    H00, H10, H20, H30, H08, H18, H28, H38,
 }
 
-enum JumpAddr {
+pub enum JumpAddr {
     IMM16, HL, REL,
 }
 
-enum Instruction {
+pub enum Instruction {
     LD(LoadType),
-    ADD(ArithmeticTarget),
     SUB(ArithmeticTarget),
     AND(ArithmeticTarget),
     OR(ArithmeticTarget),
@@ -53,13 +52,16 @@ enum Instruction {
     SBC(ArithmeticTarget),
     XOR(ArithmeticTarget),
     CP(ArithmeticTarget),
+    INC(ArithmeticTarget),
     INC16(ArithmeticTarget16),
+    ADD(ArithmeticTarget),
     ADD16(ArithmeticTarget16),
+    DEC(ArithmeticTarget),
     DEC16(ArithmeticTarget16),
     JP(ControlCondition, JumpAddr),
     RET(ControlCondition),
     CALL(ControlCondition),
-    RST(RST_Value),
+    RST(RstValue),
     NOP,
     STOP,
     HALT,
@@ -72,7 +74,7 @@ enum Instruction {
 }
 
 impl Instruction {
-    fn from_byte(byte: u8, prefixed: bool) -> Option<Instruction> {
+    pub fn from_byte(byte: u8, prefixed: bool) -> Option<Instruction> {
         if prefixed {
             Instruction::from_byte_prefixed(byte)
         } else {
@@ -81,8 +83,6 @@ impl Instruction {
     }
     fn from_byte_not_prefixed(byte: u8) -> Option<Instruction> {
         match byte {
-            0x13 => Some(Instruction::INC(IncDecTarget::DE)),
-
             // 8 bit loads
 
             0x02 => Some(Instruction::LD(LoadType::Byte(LoadByteDestination::BC, LoadByteSource::A))),
@@ -175,8 +175,8 @@ impl Instruction {
             0xE0 => Some(Instruction::LD(LoadType::Byte(LoadByteDestination::A8, LoadByteSource::A))),
             0xF0 => Some(Instruction::LD(LoadType::Byte(LoadByteDestination::A, LoadByteSource::A8))),
 
-            0xE2 => Some(Instruction::LD(LoadType::Byte(LoadByteDestination::C_A8, LoadByteSource::A))),
-            0xF2 => Some(Instruction::LD(LoadType::Byte(LoadByteDestination::A, LoadByteSource::C_A8))),
+            0xE2 => Some(Instruction::LD(LoadType::Byte(LoadByteDestination::CA8, LoadByteSource::A))),
+            0xF2 => Some(Instruction::LD(LoadType::Byte(LoadByteDestination::A, LoadByteSource::CA8))),
 
             0xEA => Some(Instruction::LD(LoadType::Byte(LoadByteDestination::A16, LoadByteSource::A))),
             0xFA => Some(Instruction::LD(LoadType::Byte(LoadByteDestination::A, LoadByteSource::A16))),
@@ -184,17 +184,22 @@ impl Instruction {
             // 16 bit loads
 
             0x01 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::BC, LoadWordSource::IMM16))),
-            0x21 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::DE, LoadWordSource::IMM16))),
-            0x31 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::HL, LoadWordSource::IMM16))),
-            0x41 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::SP, LoadWordSource::IMM16))),
+            0x11 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::DE, LoadWordSource::IMM16))),
+            0x21 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::HL, LoadWordSource::IMM16))),
+            0x31 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::SP, LoadWordSource::IMM16))),
 
             0xC1 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::BC, LoadWordSource::POP))),
             0xD1 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::DE, LoadWordSource::POP))),
             0xE1 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::HL, LoadWordSource::POP))),
             0xF1 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::AF, LoadWordSource::POP))),
 
+            0xC5 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::PUSH, LoadWordSource::BC))),
+            0xD5 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::PUSH, LoadWordSource::DE))),
+            0xE5 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::PUSH, LoadWordSource::HL))),
+            0xF5 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::PUSH, LoadWordSource::AF))),
+
             0x08 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::A16, LoadWordSource::SP))),
-            0xF8 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::HL, LoadWordSource::SP_IMM))),
+            0xF8 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::HL, LoadWordSource::SPIMM))),
             0xF9 => Some(Instruction::LD(LoadType::Word(LoadWordDestination::SP, LoadWordSource::HL))),
 
             // 8 bit arithmetic
@@ -318,7 +323,7 @@ impl Instruction {
             0x2B => Some(Instruction::ADD16(ArithmeticTarget16::HL)),
             0x3B => Some(Instruction::ADD16(ArithmeticTarget16::SP)),
 
-            0xE8 => Some(Instruction::ADD16(ArithmeticTarget16::SP_IMM)),
+            0xE8 => Some(Instruction::ADD16(ArithmeticTarget16::SPIMM)),
 
             // jumps (JP and JR are combined)
 
@@ -346,24 +351,23 @@ impl Instruction {
 
             // returns
 
-            0xC0 => Some(Instruction::RET(ControlCondition::NZ),
-            0xD0 => Some(Instruction::RET(ControlCondition::NC),
-            0xC8 => Some(Instruction::RET(ControlCondition::Z),
-            0xD8 => Some(Instruction::RET(ControlCondition::C),
-            0xC9 => Some(Instruction::RET(ControlCondition::NONE),
-            0xD9 => Some(Instruction::RET(ControlCondition::C),
-            0xD9 => Some(Instruction::RET(ControlCondition::NONE_EI),
+            0xC0 => Some(Instruction::RET(ControlCondition::NZ)),
+            0xD0 => Some(Instruction::RET(ControlCondition::NC)),
+            0xC8 => Some(Instruction::RET(ControlCondition::Z)),
+            0xD8 => Some(Instruction::RET(ControlCondition::C)),
+            0xC9 => Some(Instruction::RET(ControlCondition::NONE)),
+            0xD9 => Some(Instruction::RET(ControlCondition::NONEEI)),
 
             // resets
 
-            0xC7 => Some(Instruction::RST(RST_Value::h00)),
-            0xD7 => Some(Instruction::RST(RST_Value::h10)),
-            0xE7 => Some(Instruction::RST(RST_Value::h20)),
-            0xF7 => Some(Instruction::RST(RST_Value::h30)),
-            0xCF => Some(Instruction::RST(RST_Value::h08)),
-            0xDF => Some(Instruction::RST(RST_Value::h18)),
-            0xEF => Some(Instruction::RST(RST_Value::h28)),
-            0xFF => Some(Instruction::RST(RST_Value::h38)),
+            0xC7 => Some(Instruction::RST(RstValue::H00)),
+            0xD7 => Some(Instruction::RST(RstValue::H10)),
+            0xE7 => Some(Instruction::RST(RstValue::H20)),
+            0xF7 => Some(Instruction::RST(RstValue::H30)),
+            0xCF => Some(Instruction::RST(RstValue::H08)),
+            0xDF => Some(Instruction::RST(RstValue::H18)),
+            0xEF => Some(Instruction::RST(RstValue::H28)),
+            0xFF => Some(Instruction::RST(RstValue::H38)),
 
             // misc
 

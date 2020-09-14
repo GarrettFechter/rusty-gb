@@ -1,5 +1,22 @@
-struct MemoryBus {
-    memory: [u8; 0xFFFF],
+pub mod instructions;
+pub use instructions::Instruction;
+pub use instructions::LoadByteDestination;
+pub use instructions::LoadByteSource;
+pub use instructions::LoadWordDestination;
+pub use instructions::LoadWordSource;
+pub use instructions::LoadType;
+pub use instructions::ArithmeticTarget;
+pub use instructions::ArithmeticTarget16;
+pub use instructions::ControlCondition;
+pub use instructions::RstValue;
+pub use instructions::JumpAddr;
+
+pub mod registers;
+pub use registers::Registers;
+pub use registers::FlagsRegister;
+
+pub struct MemoryBus {
+    pub memory: [u8; 0xFFFF],
 }
 
 impl MemoryBus {
@@ -11,20 +28,20 @@ impl MemoryBus {
     }
 }
 
-struct CPU {
-    reg: Registers,
-    bus: MemoryBus,
-    pc: u16,
-    sp: u16,
-    interrupt_enable: bool,
-    is_halted: bool,
-    is_stopped: bool,
+pub struct CPU {
+    pub reg: Registers,
+    pub bus: MemoryBus,
+    pub pc: u16,
+    pub sp: u16,
+    pub interrupt_enable: bool,
+    pub is_halted: bool,
+    pub is_stopped: bool,
 }
 
 impl CPU {
     // Executes given instruction and returns next pc
     fn execute(&mut self, instruction: Instruction) -> u16 {
-        if (is_stopped || is_halted) {
+        if self.is_stopped || self.is_halted {
             return self.pc;
         }
         match instruction {
@@ -39,7 +56,6 @@ impl CPU {
                     ArithmeticTarget::HL   => self.reg.a = self.add(self.bus.read_byte(self.reg.get_hl())),
                     ArithmeticTarget::A    => self.reg.a = self.add(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.add(self.bus.read_byte(self.pc + 1)),
-                    _ => panic!("Undefined SUB ArithmeticTarget"),
                 };
                 // return next PC value
                 match target {
@@ -59,7 +75,6 @@ impl CPU {
                     ArithmeticTarget::HL   => self.reg.a = self.sub(self.bus.read_byte(self.reg.get_hl())),
                     ArithmeticTarget::A    => self.reg.a = self.sub(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.sub(self.bus.read_byte(self.pc + 1)),
-                    _ => panic!("Undefined SUB ArithmeticTarget"),
                 };
                 // return next PC value
                 match target {
@@ -79,7 +94,6 @@ impl CPU {
                     ArithmeticTarget::HL   => self.reg.a = self.and(self.bus.read_byte(self.reg.get_hl())),
                     ArithmeticTarget::A    => self.reg.a = self.and(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.and(self.bus.read_byte(self.pc + 1)),
-                    _ => panic!("Undefined AND ArithmeticTarget"),
                 };
                 // return next PC value
                 match target {
@@ -99,7 +113,6 @@ impl CPU {
                     ArithmeticTarget::HL   => self.reg.a = self.or(self.bus.read_byte(self.reg.get_hl())),
                     ArithmeticTarget::A    => self.reg.a = self.or(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.or(self.bus.read_byte(self.pc + 1)),
-                    _ => panic!("Undefined OR ArithmeticTarget"),
                 };
                 // return next PC value
                 match target {
@@ -119,7 +132,6 @@ impl CPU {
                     ArithmeticTarget::HL   => self.reg.a = self.adc(self.bus.read_byte(self.reg.get_hl())),
                     ArithmeticTarget::A    => self.reg.a = self.adc(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.adc(self.bus.read_byte(self.pc + 1)),
-                    _ => panic!("Undefined ADC ArithmeticTarget"),
                 };
                 // return next PC value
                 match target {
@@ -139,7 +151,6 @@ impl CPU {
                     ArithmeticTarget::HL   => self.reg.a = self.sbc(self.bus.read_byte(self.reg.get_hl())),
                     ArithmeticTarget::A    => self.reg.a = self.sbc(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.sbc(self.bus.read_byte(self.pc + 1)),
-                    _ => panic!("Undefined SBC ArithmeticTarget"),
                 };
                 // return next PC value
                 match target {
@@ -159,7 +170,6 @@ impl CPU {
                     ArithmeticTarget::HL   => self.reg.a = self.xor(self.bus.read_byte(self.reg.get_hl())),
                     ArithmeticTarget::A    => self.reg.a = self.xor(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.xor(self.bus.read_byte(self.pc + 1)),
-                    _ => panic!("Undefined XOR ArithmeticTarget"),
                 };
                 // return next PC value
                 match target {
@@ -180,7 +190,6 @@ impl CPU {
                     ArithmeticTarget::HL   => self.sub(self.bus.read_byte(self.reg.get_hl())),
                     ArithmeticTarget::A    => self.sub(self.reg.a),
                     ArithmeticTarget::IMM8 => self.sub(self.bus.read_byte(self.pc + 1)),
-                    _ => panic!("Undefined CP ArithmeticTarget"),
                 };
                 // return next PC value
                 match target {
@@ -199,12 +208,13 @@ impl CPU {
                     ArithmeticTarget::L    => self.reg.l = self.inc(self.reg.l),
                     ArithmeticTarget::HL   => {
                         let addr = self.reg.get_hl();
-                        self.bus.write_byte(addr, self.inc(self.bus.read_byte(addr));
+                        let value = self.inc(self.bus.read_byte(addr));
+                        self.bus.write_byte(addr, value);
                     },
                     ArithmeticTarget::A    => self.reg.a = self.inc(self.reg.a),
                     _ => panic!("Undefined INC ArithmeticTarget"),
                 };
-                _ => self.pc + 1
+                self.pc + 1
             }
 
             Instruction::DEC(target) => {
@@ -217,53 +227,65 @@ impl CPU {
                     ArithmeticTarget::L    => self.reg.l = self.dec(self.reg.l),
                     ArithmeticTarget::HL   => {
                         let addr = self.reg.get_hl();
-                        self.bus.write_byte(addr, self.dec(self.bus.read_byte(addr));
+                        let value = self.dec(self.bus.read_byte(addr));
+                        self.bus.write_byte(addr, value);
                     },
                     ArithmeticTarget::A    => self.reg.a = self.dec(self.reg.a),
                     _ => panic!("Undefined DEC ArithmeticTarget"),
                 };
-                _ => self.pc + 1
+                self.pc + 1
             }
 
             Instruction::INC16(target) => {
                 match target {
-                    ArithmeticTarget::BC => self.reg.set_bc(self.reg.get_bc().wrapping_add(1)),
-                    ArithmeticTarget::DE => self.reg.set_de(self.reg.get_de().wrapping_add(1)),
-                    ArithmeticTarget::HL => self.reg.set_hl(self.reg.get_hl().wrapping_add(1)),
-                    ArithmeticTarget::SP => self.sp = self.sp.wrapping_add(1),
+                    ArithmeticTarget16::BC => self.reg.set_bc(self.reg.get_bc().wrapping_add(1)),
+                    ArithmeticTarget16::DE => self.reg.set_de(self.reg.get_de().wrapping_add(1)),
+                    ArithmeticTarget16::HL => self.reg.set_hl(self.reg.get_hl().wrapping_add(1)),
+                    ArithmeticTarget16::SP => self.sp = self.sp.wrapping_add(1),
                     _ => panic!("Undefined INC16 ArithmeticTarget"),
                 };
-                _ => self.pc + 1
+                self.pc + 1
             }
 
             Instruction::ADD16(target) => {
                 match target {
-                    ArithmeticTarget::BC      => self.reg.set_hl(self.add16(self.reg.get_hl(), self.reg.get_bc())),
-                    ArithmeticTarget::DE      => self.reg.set_hl(self.add16(self.reg.get_hl(), self.reg.get_de())),
-                    ArithmeticTarget::HL      => self.reg.set_hl(self.add16(self.reg.get_hl(), self.reg.get_hl())),
-                    ArithmeticTarget::SP      => self.reg.set_hl(self.add16(self.reg.get_hl(), self.sp)),
-                    ArithmeticTarget::SP_IMM  => {
-                        let imm: i8 = self.bus.read_byte(pc + 1) as i8;
+                    ArithmeticTarget16::BC      => {
+                        let value = self.add16(self.reg.get_hl(), self.reg.get_bc());
+                        self.reg.set_hl(value);
+                    }
+                    ArithmeticTarget16::DE      => {
+                        let value = self.add16(self.reg.get_hl(), self.reg.get_de());
+                        self.reg.set_hl(value);
+                    }
+                    ArithmeticTarget16::HL      => {
+                        let value = self.add16(self.reg.get_hl(), self.reg.get_hl());
+                        self.reg.set_hl(value);
+                    }
+                    ArithmeticTarget16::SP      => {
+                        let value = self.add16(self.reg.get_hl(), self.sp);
+                        self.reg.set_hl(value);
+                    }
+                    ArithmeticTarget16::SPIMM  => {
+                        let imm: i8 = self.bus.read_byte(self.pc + 1) as i8;
                         self.sp = self.sp.wrapping_add(imm as u16);
                     }
-                    _ => panic!("Undefined ADD16 ArithmeticTarget"),
                 };
                 // return next PC value
                 match target {
-                    ArithmeticTarget::SP_IMM => self.pc + 2,
+                    ArithmeticTarget16::SPIMM => self.pc + 2,
                     _ => self.pc + 1,
                 }
             }
 
             Instruction::DEC16(target) => {
                 match target {
-                    ArithmeticTarget::BC => self.reg.set_bc(self.reg.get_bc().wrapping_sub(1)),
-                    ArithmeticTarget::DE => self.reg.set_de(self.reg.get_de().wrapping_sub(1)),
-                    ArithmeticTarget::HL => self.reg.set_hl(self.reg.get_hl().wrapping_sub(1)),
-                    ArithmeticTarget::SP => self.sp = self.sp.wrapping_sub(1),
+                    ArithmeticTarget16::BC => self.reg.set_bc(self.reg.get_bc().wrapping_sub(1)),
+                    ArithmeticTarget16::DE => self.reg.set_de(self.reg.get_de().wrapping_sub(1)),
+                    ArithmeticTarget16::HL => self.reg.set_hl(self.reg.get_hl().wrapping_sub(1)),
+                    ArithmeticTarget16::SP => self.sp = self.sp.wrapping_sub(1),
                     _ => panic!("Undefined DEC16 ArithmeticTarget"),
                 };
-                _ => self.pc + 1
+                self.pc + 1
             }
 
             Instruction::LD(load_type) => {
@@ -274,34 +296,32 @@ impl CPU {
                             LoadWordSource::DE  => self.reg.get_de(),
                             LoadWordSource::HL  => self.reg.get_hl(),
                             LoadWordSource::SP  => self.sp,
-                            LoadWordSource::POP => {
-                                let value = ((self.bus.read_byte(self.sp + 1)) as u16 << 8) | self.bus.read_byte(self.sp) as u16;
-                                self.sp += 2;
-                                value
-                            },
+                            LoadWordSource::POP => ((self.pop() as u16) << 8) | (self.pop() as u16),
                             LoadWordSource::AF => self.reg.get_af(),
                             LoadWordSource::IMM16 => {
-                                self.bus.read_byte(self.pc + 1) as u16 | (self.bus.read_byte(self.pc + 2) as u16 << 8)
+                                self.bus.read_byte(self.pc + 1) as u16 | ((self.bus.read_byte(self.pc + 2) as u16) << 8)
                             },
-                            // there was a little ambiguity on the LDHL SP, e aka LD HL,SP+e
-                            // instruction, but decided this was correct
-                            LoadWordSource::SP_IMM => self.sp.wrapping_add(self.bus.read_byte(self.pc + 1) as u8),
-                            _ => panic!("Unsupported LoadWordSource"),
-                        }
+                            LoadWordSource::SPIMM => {
+                                let value = self.add16(self.sp, self.bus.read_byte(self.pc + 1) as u16);
+                                self.reg.f.zero = false;
+                                value
+                            }
+                        };
 
                         match dest {
                             LoadWordDestination::BC => self.reg.set_bc(source_value),
                             LoadWordDestination::DE => self.reg.set_de(source_value),
                             LoadWordDestination::HL => self.reg.set_hl(source_value),
-                            LoadWordDestination::SP => self.reg.sp = source_value,
+                            LoadWordDestination::SP => self.sp = source_value,
                             LoadWordDestination::PUSH => {
-                                self.bus.write_byte(self.reg.sp, source_value);
-                                self.sp += 1;
+                                self.push((source_value >> 8) as u8);
+                                self.push((source_value & 0xFF) as u8);
                             },
                             LoadWordDestination::AF => self.reg.set_af(source_value),
                             LoadWordDestination::A16 => {
-                                let addr = self.bus.read_byte(pc + 1) as u16 | (self.bus.read_byte(pc + 2) as u16 << 8);
-                                self.bus.write_byte(addr, source_value);
+                                let addr = self.bus.read_byte(self.pc + 1) as u16 | ((self.bus.read_byte(self.pc + 2) as u16) << 8);
+                                self.bus.write_byte(addr, (source_value & 0xFF) as u8);
+                                self.bus.write_byte(addr + 1, (source_value >> 8) as u8);
                             }
                         }
 
@@ -311,7 +331,7 @@ impl CPU {
                             (_, LoadWordSource::IMM16) |
                             (LoadWordDestination::A16, _) => self.pc.wrapping_add(3),
 
-                            (_, LoadWordSource::SP_IMM) => self.pc.wrapping_add(2),
+                            (_, LoadWordSource::SPIMM) => self.pc.wrapping_add(2),
 
                             (_, _) => self.pc.wrapping_add(1),
                         }
@@ -326,27 +346,27 @@ impl CPU {
                             LoadByteSource::H    => self.reg.h,
                             LoadByteSource::L    => self.reg.l,
                             LoadByteSource::HLI  => {
-                                let s = self.bus.read_byte(self.reg.h << 8 || self.reg.l);
+                                let s = self.bus.read_byte((self.reg.h << 8) as u16 | self.reg.l as u16);
                                 self.reg.set_hl(self.reg.get_hl().wrapping_add(1));
                                 s
                             },
                             LoadByteSource::HLD  => {
-                                let s = self.bus.read_byte(self.reg.h << 8 || self.reg.l);
+                                let s = self.bus.read_byte((self.reg.h << 8) as u16 | (self.reg.l) as u16);
                                 self.reg.set_hl(self.reg.get_hl().wrapping_sub(1));
                                 s
                             },
                             LoadByteSource::BC   => self.bus.read_byte(self.reg.get_bc()),
                             LoadByteSource::DE   => self.bus.read_byte(self.reg.get_de()),
                             LoadByteSource::HL   => self.bus.read_byte(self.reg.get_hl()),
-                            LoadByteSource::A8   => self.bus.read_byte(0xFF00 | self.bus.read_byte(self.pc + 1)),
-                            LoadByteSource::C_A8   => self.bus.read_byte(0xFF00 | self.reg.c),
+                            LoadByteSource::A8   => self.bus.read_byte(0xFF00 | self.bus.read_byte(self.pc + 1) as u16),
+                            LoadByteSource::CA8   => self.bus.read_byte(0xFF00 | self.reg.c as u16),
                             LoadByteSource::A16  => {
                                 // pc+1 holds LSB, pc+2 holds MSB
-                                let addr = self.bus.read_byte(self.pc + 1) | (self.bus.read_byte(self.pc + 2) << 4);
+                                let addr = self.bus.read_byte(self.pc + 1) as u16 | ((self.bus.read_byte(self.pc + 2) << 8) as u16);
                                 self.bus.read_byte(addr)
                             },
                             LoadByteSource::IMM8 => self.bus.read_byte(self.pc + 1),
-                        }
+                        };
 
                         match dest {
                             LoadByteDestination::A   => self.reg.a = source_value,
@@ -357,27 +377,27 @@ impl CPU {
                             LoadByteDestination::H   => self.reg.h = source_value,
                             LoadByteDestination::L   => self.reg.l = source_value,
                             LoadByteDestination::HLI => {
-                                self.bus.write_byte(self.reg.get_hl, source_value);
+                                self.bus.write_byte(self.reg.get_hl(), source_value);
                                 self.reg.set_hl(self.reg.get_hl().wrapping_add(1));
                             },
                             LoadByteDestination::HLD => {
-                                self.bus.write_byte(self.reg.get_hl, source_value);
+                                self.bus.write_byte(self.reg.get_hl(), source_value);
                                 self.reg.set_hl(self.reg.get_hl().wrapping_sub(1));
                             },
                             LoadByteDestination::BC  => self.bus.write_byte(self.reg.get_bc(), source_value),
                             LoadByteDestination::DE  => self.bus.write_byte(self.reg.get_de(), source_value),
                             LoadByteDestination::HL  => self.bus.write_byte(self.reg.get_hl(), source_value),
                             LoadByteDestination::A8  => {
-                                let addr = 0xFF00 | self.bus.read_byte(self.pc + 1);
-                                self.bus.write_byte(addr, source_value),
+                                let addr = 0xFF00 | self.bus.read_byte(self.pc + 1) as u16;
+                                self.bus.write_byte(addr, source_value)
                             },
-                            LoadByteDestination::C_A8  => {
-                                let addr = 0xFF00 | self.reg.c;
-                                self.bus.write_byte(addr, source_value),
+                            LoadByteDestination::CA8  => {
+                                let addr = 0xFF00 | self.reg.c as u16;
+                                self.bus.write_byte(addr, source_value)
                             },
                             LoadByteDestination::A16 => {
                                 // pc+1 holds LSB, pc+2 holds MSB
-                                let addr = self.bus.read_byte(self.pc + 1) | (self.bus.read_byte(self.pc + 2) << 4);
+                                let addr = self.bus.read_byte(self.pc + 1) as u16 | (self.bus.read_byte(self.pc + 2) << 8) as u16;
                                 self.bus.write_byte(addr, source_value)
                             },
                         }
@@ -398,19 +418,20 @@ impl CPU {
             }
 
             Instruction::CALL(condition) => {
-                if (match condition {
+                if match condition {
                     ControlCondition::NZ   => !self.reg.f.zero,
                     ControlCondition::NC   => !self.reg.f.carry,
                     ControlCondition::Z    => self.reg.f.zero,
                     ControlCondition::C    => self.reg.f.carry,
                     ControlCondition::NONE => true,
-                })
+                    _ => panic!("Unsupported CALL ControlCondition"),
+                }
                 {
                     // save pc and return new pc
                     let return_pc = self.pc + 3;
                     self.push((return_pc >> 8) as u8);
                     self.push((return_pc & 0xFF) as u8);
-                    self.bus.read_byte(self.pc + 1) as u16) | ((self.bus.read_byte(self.pc + 2) << 8) as u16)
+                    (self.bus.read_byte(self.pc + 1) as u16) | ((self.bus.read_byte(self.pc + 2) << 8) as u16)
                 }
                 else {
                     self.pc + 3
@@ -418,18 +439,18 @@ impl CPU {
             }
 
             Instruction::RET(condition) => {
-                if (match condition {
+                if match condition {
                     ControlCondition::NZ      => !self.reg.f.zero,
                     ControlCondition::NC      => !self.reg.f.carry,
                     ControlCondition::Z       => self.reg.f.zero,
                     ControlCondition::C       => self.reg.f.carry,
                     ControlCondition::NONE    => true,
-                    ControlCondition::NONE_EI => {
+                    ControlCondition::NONEEI => {
                         // TODO: unsure that interrupts should be enabled this early during RETI
                         self.interrupt_enable = true;
                         true
                     }
-                })
+                }
                 {
                     let pch = self.pop();
                     let pcl = self.pop();
@@ -442,35 +463,36 @@ impl CPU {
 
             Instruction::RST(hvalue) => {
                 let value = match hvalue {
-                    RST_Value::h00 => 0x00,
-                    RST_Value::h10 => 0x10,
-                    RST_Value::h20 => 0x20,
-                    RST_Value::h30 => 0x30,
-                    RST_Value::h08 => 0x08,
-                    RST_Value::h18 => 0x18,
-                    RST_Value::h28 => 0x28,
-                    RST_Value::h38 => 0x38,
-                }
-                self.push(((self.sp - 1) >> 8) as u16);
-                self.push(((self.sp - 2) >> 8) as u16);
-                self.read_byte(self.pc + 1) as u16
+                    RstValue::H00 => 0x00,
+                    RstValue::H10 => 0x10,
+                    RstValue::H20 => 0x20,
+                    RstValue::H30 => 0x30,
+                    RstValue::H08 => 0x08,
+                    RstValue::H18 => 0x18,
+                    RstValue::H28 => 0x28,
+                    RstValue::H38 => 0x38,
+                };
+                self.push((self.pc >> 8) as u8);
+                self.push((self.pc & 0xFF) as u8);
+                value as u16
             }
 
             Instruction::JP(condition, addr_type) => {
-                if (match condition {
+                if match condition {
                     ControlCondition::NZ   => !self.reg.f.zero,
                     ControlCondition::NC   => !self.reg.f.carry,
                     ControlCondition::Z    => self.reg.f.zero,
                     ControlCondition::C    => self.reg.f.carry,
                     ControlCondition::NONE => true,
-                })
+                    _ => panic!("Unsupported JP ControlCondition"),
+                }
                 {
                     // taking jump, return next pc
-                    match addr {
+                    match addr_type {
                         JumpAddr::IMM16 => (self.bus.read_byte(self.pc + 1) as u16) | ((self.bus.read_byte(self.pc + 2) << 8) as u16),
                         JumpAddr::HL    => self.reg.get_hl(),
                         JumpAddr::REL   => self.pc.wrapping_add(self.bus.read_byte(self.pc + 1) as u16),
-                    };
+                    }
                 }
                 else {
                     // didn't jump, get next pc
@@ -480,7 +502,6 @@ impl CPU {
                         JumpAddr::REL   => self.pc + 2,
                     }
                 }
-                _ => self.pc + 1
             }
 
             Instruction::NOP => {
@@ -543,7 +564,7 @@ impl CPU {
                 // Invert carry flag and update flags: - 0 0 C
                 self.reg.f.subtract = false;
                 self.reg.f.half_carry = false;
-                self.reg.f.carry ^= 0x1;
+                self.reg.f.carry = !self.reg.f.carry;
                 self.pc + 1
             }
 
@@ -554,18 +575,16 @@ impl CPU {
                 self.reg.f.carry = true;
                 self.pc + 1
             }
-
-            _ => { self.pc }, // TODO: implement other instructions
         }
     }
 
     // Reads and executes instruction at pc
     fn step(&mut self) {
-        let mut instruction_byte = self.bus.read_byte(pc);
+        let mut instruction_byte = self.bus.read_byte(self.pc);
         let prefixed = instruction_byte == 0xCB;
 
         if prefixed {
-            instruction_byte = self.bus.read_byte(pc + 1);
+            instruction_byte = self.bus.read_byte(self.pc + 1);
         }
 
         let next_pc = if let Some(instruction) = Instruction::from_byte(instruction_byte, prefixed) {
@@ -662,7 +681,7 @@ impl CPU {
 
     // Return value + 1 and update flags: Z 0 H -
     fn inc(&mut self, value: u8) -> u8 {
-        let (new_value, did_overflow) = value.overflowing_add(1);
+        let (new_value, _) = value.overflowing_add(1);
         self.reg.f.zero = new_value == 0;
         self.reg.f.subtract = false;
         self.reg.f.half_carry = value == 0xF;
@@ -671,7 +690,7 @@ impl CPU {
 
     // Return value - 1 and update flags: Z 1 H -
     fn dec(&mut self, value: u8) -> u8 {
-        let (new_value, did_overflow) = value.overflowing_sub(1);
+        let (new_value, _) = value.overflowing_sub(1);
         self.reg.f.zero = new_value == 0;
         self.reg.f.subtract = true;
         self.reg.f.half_carry = value & 0xF == 0;
@@ -679,12 +698,13 @@ impl CPU {
     }
 
     fn push(&mut self, value: u8) {
-        self.write_byte(self.sp - 1, value);
+        self.bus.write_byte(self.sp - 1, value);
         self.sp -= 1;
     }
 
     fn pop(&mut self) -> u8 {
-        self.read_byte(self.sp);
+        let value = self.bus.read_byte(self.sp);
         self.sp += 1;
+        value
     }
 }

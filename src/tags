@@ -1,0 +1,160 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/a3c87ab5/
+A	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+A	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+A	instructions.rs	/^    B, C, D, E, H, L, HL, A, IMM8,$/;"	e	enum:ArithmeticTarget
+A16	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+A16	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+A16	instructions.rs	/^    BC, DE, HL, SP, PUSH, AF, A16$/;"	e	enum:LoadWordDestination
+A8	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+A8	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+ADC	instructions.rs	/^    ADC(ArithmeticTarget),$/;"	e	enum:Instruction
+ADD	instructions.rs	/^    ADD(ArithmeticTarget),$/;"	e	enum:Instruction
+ADD16	instructions.rs	/^    ADD16(ArithmeticTarget16),$/;"	e	enum:Instruction
+AF	instructions.rs	/^    BC, DE, HL, SP, POP, AF, IMM16, SP_IMM,$/;"	e	enum:LoadWordSource
+AF	instructions.rs	/^    BC, DE, HL, SP, PUSH, AF, A16$/;"	e	enum:LoadWordDestination
+AND	instructions.rs	/^    AND(ArithmeticTarget),$/;"	e	enum:Instruction
+ArithmeticTarget	instructions.rs	/^enum ArithmeticTarget {$/;"	g
+ArithmeticTarget16	instructions.rs	/^enum ArithmeticTarget16 {$/;"	g
+B	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+B	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+B	instructions.rs	/^    B, C, D, E, H, L, HL, A, IMM8,$/;"	e	enum:ArithmeticTarget
+BC	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+BC	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+BC	instructions.rs	/^    BC, DE, HL, SP, POP, AF, IMM16, SP_IMM,$/;"	e	enum:LoadWordSource
+BC	instructions.rs	/^    BC, DE, HL, SP, PUSH, AF, A16$/;"	e	enum:LoadWordDestination
+BC	instructions.rs	/^    BC, DE, HL, SP, SP_IMM,$/;"	e	enum:ArithmeticTarget16
+Byte	instructions.rs	/^    Byte(LoadByteDestination, LoadByteSource),$/;"	e	enum:LoadType
+C	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+C	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+C	instructions.rs	/^    B, C, D, E, H, L, HL, A, IMM8,$/;"	e	enum:ArithmeticTarget
+C	instructions.rs	/^    NZ, NC, Z, C, NONE,$/;"	e	enum:ControlCondition
+CALL	instructions.rs	/^    CALL(ControlCondition),$/;"	e	enum:Instruction
+CP	instructions.rs	/^    CP(ArithmeticTarget),$/;"	e	enum:Instruction
+CPU	cpu.rs	/^impl CPU {$/;"	c
+CPU	cpu.rs	/^struct CPU {$/;"	s
+C_A8	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+C_A8	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+ControlCondition	instructions.rs	/^enum ControlCondition {$/;"	g
+D	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+D	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+D	instructions.rs	/^    B, C, D, E, H, L, HL, A, IMM8,$/;"	e	enum:ArithmeticTarget
+DE	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+DE	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+DE	instructions.rs	/^    BC, DE, HL, SP, POP, AF, IMM16, SP_IMM,$/;"	e	enum:LoadWordSource
+DE	instructions.rs	/^    BC, DE, HL, SP, PUSH, AF, A16$/;"	e	enum:LoadWordDestination
+DE	instructions.rs	/^    BC, DE, HL, SP, SP_IMM,$/;"	e	enum:ArithmeticTarget16
+DEC16	instructions.rs	/^    DEC16(ArithmeticTarget16),$/;"	e	enum:Instruction
+E	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+E	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+E	instructions.rs	/^    B, C, D, E, H, L, HL, A, IMM8,$/;"	e	enum:ArithmeticTarget
+FlagsRegister	registers.rs	/^impl std::convert::From<u8> for FlagsRegister {$/;"	c
+FlagsRegister	registers.rs	/^struct FlagsRegister {$/;"	s
+H	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+H	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+H	instructions.rs	/^    B, C, D, E, H, L, HL, A, IMM8,$/;"	e	enum:ArithmeticTarget
+HL	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+HL	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+HL	instructions.rs	/^    B, C, D, E, H, L, HL, A, IMM8,$/;"	e	enum:ArithmeticTarget
+HL	instructions.rs	/^    BC, DE, HL, SP, POP, AF, IMM16, SP_IMM,$/;"	e	enum:LoadWordSource
+HL	instructions.rs	/^    BC, DE, HL, SP, PUSH, AF, A16$/;"	e	enum:LoadWordDestination
+HL	instructions.rs	/^    BC, DE, HL, SP, SP_IMM,$/;"	e	enum:ArithmeticTarget16
+HL	instructions.rs	/^    IMM16, HL, REL,$/;"	e	enum:JumpAddr
+HLD	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+HLD	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+HLI	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+HLI	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+IMM16	instructions.rs	/^    BC, DE, HL, SP, POP, AF, IMM16, SP_IMM,$/;"	e	enum:LoadWordSource
+IMM16	instructions.rs	/^    IMM16, HL, REL,$/;"	e	enum:JumpAddr
+IMM8	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+IMM8	instructions.rs	/^    B, C, D, E, H, L, HL, A, IMM8,$/;"	e	enum:ArithmeticTarget
+INC16	instructions.rs	/^    INC16(ArithmeticTarget16),$/;"	e	enum:Instruction
+Instruction	instructions.rs	/^enum Instruction {$/;"	g
+Instruction	instructions.rs	/^impl Instruction {$/;"	c
+JP	instructions.rs	/^    JP(ControlCondition, JumpAddr),$/;"	e	enum:Instruction
+JumpAddr	instructions.rs	/^enum JumpAddr {$/;"	g
+L	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16$/;"	e	enum:LoadByteDestination
+L	instructions.rs	/^    A, B, C, D, E, H, L, HLI, HLD, BC, DE, HL, A8, C_A8, A16, IMM8$/;"	e	enum:LoadByteSource
+L	instructions.rs	/^    B, C, D, E, H, L, HL, A, IMM8,$/;"	e	enum:ArithmeticTarget
+LD	instructions.rs	/^    LD(LoadType),$/;"	e	enum:Instruction
+LoadByteDestination	instructions.rs	/^enum LoadByteDestination {$/;"	g
+LoadByteSource	instructions.rs	/^enum LoadByteSource {$/;"	g
+LoadType	instructions.rs	/^enum LoadType {$/;"	g
+LoadWordDestination	instructions.rs	/^enum LoadWordDestination {$/;"	g
+LoadWordSource	instructions.rs	/^enum LoadWordSource {$/;"	g
+MemoryBus	cpu.rs	/^impl MemoryBus {$/;"	c
+MemoryBus	cpu.rs	/^struct MemoryBus {$/;"	s
+NC	instructions.rs	/^    NZ, NC, Z, C, NONE,$/;"	e	enum:ControlCondition
+NONE	instructions.rs	/^    NZ, NC, Z, C, NONE,$/;"	e	enum:ControlCondition
+NZ	instructions.rs	/^    NZ, NC, Z, C, NONE,$/;"	e	enum:ControlCondition
+OR	instructions.rs	/^    OR(ArithmeticTarget),$/;"	e	enum:Instruction
+POP	instructions.rs	/^    BC, DE, HL, SP, POP, AF, IMM16, SP_IMM,$/;"	e	enum:LoadWordSource
+PUSH	instructions.rs	/^    BC, DE, HL, SP, PUSH, AF, A16$/;"	e	enum:LoadWordDestination
+REL	instructions.rs	/^    IMM16, HL, REL,$/;"	e	enum:JumpAddr
+RET	instructions.rs	/^    RET(ControlCondition),$/;"	e	enum:Instruction
+RETI	instructions.rs	/^    RETI,$/;"	e	enum:Instruction
+RST	instructions.rs	/^    RST,$/;"	e	enum:Instruction
+Registers	registers.rs	/^impl Registers {$/;"	c
+Registers	registers.rs	/^struct Registers {$/;"	s
+SBC	instructions.rs	/^    SBC(ArithmeticTarget),$/;"	e	enum:Instruction
+SP	instructions.rs	/^    BC, DE, HL, SP, POP, AF, IMM16, SP_IMM,$/;"	e	enum:LoadWordSource
+SP	instructions.rs	/^    BC, DE, HL, SP, PUSH, AF, A16$/;"	e	enum:LoadWordDestination
+SP	instructions.rs	/^    BC, DE, HL, SP, SP_IMM,$/;"	e	enum:ArithmeticTarget16
+SP_IMM	instructions.rs	/^    BC, DE, HL, SP, POP, AF, IMM16, SP_IMM,$/;"	e	enum:LoadWordSource
+SP_IMM	instructions.rs	/^    BC, DE, HL, SP, SP_IMM,$/;"	e	enum:ArithmeticTarget16
+SUB	instructions.rs	/^    SUB(ArithmeticTarget),$/;"	e	enum:Instruction
+Word	instructions.rs	/^    Word(LoadWordDestination, LoadWordSource), \/\/ 2 bytes$/;"	e	enum:LoadType
+XOR	instructions.rs	/^    XOR(ArithmeticTarget),$/;"	e	enum:Instruction
+Z	instructions.rs	/^    NZ, NC, Z, C, NONE,$/;"	e	enum:ControlCondition
+a	registers.rs	/^    a: u8,$/;"	m	struct:Registers
+adc	cpu.rs	/^    fn adc(&mut self, value: u8) -> u8 {$/;"	P	implementation:CPU
+add	cpu.rs	/^    fn add(&mut self, value: u8) -> u8 {$/;"	P	implementation:CPU
+add16	cpu.rs	/^    fn add16(&mut self, v1: u16, v2: u16) -> u16 {$/;"	P	implementation:CPU
+and	cpu.rs	/^    fn and(&mut self, value: u8) -> u8 {$/;"	P	implementation:CPU
+b	registers.rs	/^    b: u8,$/;"	m	struct:Registers
+bus	cpu.rs	/^    bus: MemoryBus,$/;"	m	struct:CPU
+c	registers.rs	/^    c: u8,$/;"	m	struct:Registers
+carry	registers.rs	/^    carry:      bool,$/;"	m	struct:FlagsRegister
+d	registers.rs	/^    d: u8,$/;"	m	struct:Registers
+dec	cpu.rs	/^    fn dec(&mut self, value: u8) -> u8 {$/;"	P	implementation:CPU
+e	registers.rs	/^    e: u8,$/;"	m	struct:Registers
+execute	cpu.rs	/^    fn execute(&mut self, instruction: Instruction) {$/;"	P	implementation:CPU
+f	registers.rs	/^    f: FlagsRegister,$/;"	m	struct:Registers
+from	registers.rs	/^    fn from(byte: u8) -> Self {$/;"	P	implementation:FlagsRegister
+from	registers.rs	/^    fn from(flag: FlagsRegister) -> u8 {$/;"	P	implementation:u8
+from_byte	instructions.rs	/^    fn from_byte(byte: u8, prefixed: bool) -> Option<Instruction> {$/;"	P	implementation:Instruction
+from_byte_not_prefixed	instructions.rs	/^    fn from_byte_not_prefixed(byte: u8) -> Option<Instruction> {$/;"	P	implementation:Instruction
+from_byte_prefixed	instructions.rs	/^    fn from_byte_prefixed(byte: u8) -> Option<Instruction> {$/;"	P	implementation:Instruction
+get_af	registers.rs	/^    fn get_af(&self) -> u16 {$/;"	P	implementation:Registers
+get_bc	registers.rs	/^    fn get_bc(&self) -> u16 {$/;"	P	implementation:Registers
+get_de	registers.rs	/^    fn get_de(&self) -> u16 {$/;"	P	implementation:Registers
+get_hl	registers.rs	/^    fn get_hl(&self) -> u16 {$/;"	P	implementation:Registers
+h	registers.rs	/^    h: u8,$/;"	m	struct:Registers
+half_carry	registers.rs	/^    half_carry: bool,$/;"	m	struct:FlagsRegister
+inc	cpu.rs	/^    fn inc(&mut self, value: u8) -> u8 {$/;"	P	implementation:CPU
+l	registers.rs	/^    l: u8,$/;"	m	struct:Registers
+main	main.rs	/^fn main() {$/;"	f
+memory	cpu.rs	/^    memory: [u8; 0xFFFF],$/;"	m	struct:MemoryBus
+or	cpu.rs	/^    fn or(&mut self, value: u8) -> u8 {$/;"	P	implementation:CPU
+pc	cpu.rs	/^    pc: u16,$/;"	m	struct:CPU
+read_byte	cpu.rs	/^    fn read_byte(&self, address: u16) -> u8 {$/;"	P	implementation:MemoryBus
+reg	cpu.rs	/^    reg: Registers,$/;"	m	struct:CPU
+sbc	cpu.rs	/^    fn sbc(&mut self, value: u8) -> u8 {$/;"	P	implementation:CPU
+set_af	registers.rs	/^    fn set_af(&mut self, af: u16) {$/;"	P	implementation:Registers
+set_bc	registers.rs	/^    fn set_bc(&mut self, bc: u16) {$/;"	P	implementation:Registers
+set_de	registers.rs	/^    fn set_de(&mut self, de: u16) {$/;"	P	implementation:Registers
+set_hl	registers.rs	/^    fn set_hl(&mut self, hl: u16) {$/;"	P	implementation:Registers
+sp	cpu.rs	/^    sp: u16,$/;"	m	struct:CPU
+step	cpu.rs	/^    fn step(&mut self) {$/;"	P	implementation:CPU
+sub	cpu.rs	/^    fn sub(&mut self, value: u8) -> u8 {$/;"	P	implementation:CPU
+subtract	registers.rs	/^    subtract:   bool,$/;"	m	struct:FlagsRegister
+u8	registers.rs	/^impl std::convert::From<FlagsRegister> for u8 {$/;"	c
+write_byte	cpu.rs	/^    fn write_byte(&mut self, address: u16, value: u8) {$/;"	P	implementation:MemoryBus
+xor	cpu.rs	/^    fn xor(&mut self, value: u8) -> u8 {$/;"	P	implementation:CPU
+zero	registers.rs	/^    zero:       bool,$/;"	m	struct:FlagsRegister
