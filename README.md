@@ -55,3 +55,4 @@ This is all probably a subset of [this curated list of Game Boy development sour
 * [Pastraise Opcode Reference](https://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html)
 * [GameBoy Opcode Summary](http://www.devrs.com/gb/files/opcodes.html), though this has a few typos
 * z80 CPU User Manual to describe some CPU instructions
+* [Bootstrap ROM contents](https://gbdev.gg8.se/wiki/articles/Gameboy_Bootstrap_ROM)
