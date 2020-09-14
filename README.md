@@ -43,6 +43,7 @@ Possible Extensions:
 - [ ] save states (probably simply by copying all memory)
   - [ ] rewind 10 seconds
 - [ ] option to display 160x144 viewport inside of 256x256 background, depends on PPU emulation accuracy
+- [ ] add Game Boy color support
 
 ## Reference Material
 This is all probably a subset of [this curated list of Game Boy development sources](https://gbdev.io/list.html)
@@ -54,3 +55,4 @@ This is all probably a subset of [this curated list of Game Boy development sour
 * [Pastraise Opcode Reference](https://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html)
 * [GameBoy Opcode Summary](http://www.devrs.com/gb/files/opcodes.html), though this has a few typos
 * z80 CPU User Manual to describe some CPU instructions
+* [Bootstrap ROM contents](https://gbdev.gg8.se/wiki/articles/Gameboy_Bootstrap_ROM)
