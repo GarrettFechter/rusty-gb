@@ -43,6 +43,7 @@ Possible Extensions:
 - [ ] save states (probably simply by copying all memory)
   - [ ] rewind 10 seconds
 - [ ] option to display 160x144 viewport inside of 256x256 background, depends on PPU emulation accuracy
+- [ ] add Game Boy color support
 
 ## Reference Material
 This is all probably a subset of [this curated list of Game Boy development sources](https://gbdev.io/list.html)
