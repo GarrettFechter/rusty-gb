@@ -1,19 +1,19 @@
 pub mod instructions;
-pub use instructions::Instruction;
-pub use instructions::LoadByteDestination;
-pub use instructions::LoadByteSource;
-pub use instructions::LoadWordDestination;
-pub use instructions::LoadWordSource;
-pub use instructions::LoadType;
-pub use instructions::ArithmeticTarget;
-pub use instructions::ArithmeticTarget16;
-pub use instructions::ControlCondition;
-pub use instructions::RstValue;
-pub use instructions::JumpAddr;
+pub use self::instructions::Instruction;
+pub use self::instructions::LoadByteDestination;
+pub use self::instructions::LoadByteSource;
+pub use self::instructions::LoadWordDestination;
+pub use self::instructions::LoadWordSource;
+pub use self::instructions::LoadType;
+pub use self::instructions::ArithmeticTarget;
+pub use self::instructions::ArithmeticTarget16;
+pub use self::instructions::ControlCondition;
+pub use self::instructions::RstValue;
+pub use self::instructions::JumpAddr;
 
 pub mod registers;
-pub use registers::Registers;
-pub use registers::FlagsRegister;
+pub use self::registers::Registers;
+pub use self::registers::FlagsRegister;
 
 pub struct MemoryBus {
     pub memory: [u8; 0xFFFF],
