@@ -12,7 +12,7 @@ A Game Boy emulator in Rust
 * Serial cable support
 
 ## Status
-Actively working on this project
+Check commit dates for recent activity
 
 - [ ] CPU
   - [x] LD instructions
@@ -23,7 +23,8 @@ Actively working on this project
   - [x] misc instructions
   - [ ] 0xCB prefixed instructions
   - [ ] limited unit testing
-  - [ ] integration testing by comparing to register values in BGB (Wine) after running a game 
+  - [ ] integration testing by comparing to register values in BGB (Wine) after running a game?
+  - [ ] cpu timing
 - [ ] Interrupt Controller
 - [ ] Timers
 - [ ] Pixel Processing Unit (PPU) with SDL2(?) implementation
