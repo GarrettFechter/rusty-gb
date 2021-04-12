@@ -40,7 +40,7 @@ pub struct CPU {
 
 impl CPU {
     // Executes given instruction and returns next pc
-    fn execute(&mut self, instruction: Instruction) -> u16 {
+    fn execute(&mut self, instruction: Instruction) -> (u16, u16) {
         if self.is_stopped || self.is_halted {
             return self.pc;
         }
@@ -59,8 +59,9 @@ impl CPU {
                 };
                 // return next PC value
                 match target {
-                    ArithmeticTarget::IMM8 => self.pc + 2,
-                    _ => self.pc + 1,
+                    ArithmeticTarget::HL |
+                    ArithmeticTarget::IMM8 => (self.pc + 2, 8),
+                    _ => (self.pc + 1, 4),
                 }
             }
 
@@ -587,7 +588,7 @@ impl CPU {
             instruction_byte = self.bus.read_byte(self.pc + 1);
         }
 
-        let next_pc = if let Some(instruction) = Instruction::from_byte(instruction_byte, prefixed) {
+        let (next_pc, cycles_used) = if let Some(instruction) = Instruction::from_byte(instruction_byte, prefixed) {
             self.execute(instruction)
         } else {
             let description = format!("0x{}{:x}", if prefixed { "CB" } else { "" }, instruction_byte);
@@ -595,6 +596,7 @@ impl CPU {
         };
 
         self.pc = next_pc;
+        // sleep for (cycles_used * clock frequency) / fast forward
     }
 
     // Return A + value and update flags: Z 0 H C
