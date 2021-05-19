@@ -39,13 +39,16 @@ pub struct CPU {
 }
 
 impl CPU {
-    // Executes given instruction and returns next pc
-    fn execute(&mut self, instruction: Instruction) -> (u16, u16) {
+    // Execute given instruction and return next pc
+    fn execute(&mut self, instruction: Instruction) -> u16 {
+
         if self.is_stopped || self.is_halted {
             return self.pc;
         }
+
         match instruction {
             Instruction::ADD(target) => {
+                // Execute instruction
                 match target {
                     ArithmeticTarget::B    => self.reg.a = self.add(self.reg.b),
                     ArithmeticTarget::C    => self.reg.a = self.add(self.reg.c),
@@ -57,11 +60,12 @@ impl CPU {
                     ArithmeticTarget::A    => self.reg.a = self.add(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.add(self.bus.read_byte(self.pc + 1)),
                 };
-                // return next PC value
+
+                // Return next pc
                 match target {
                     ArithmeticTarget::HL |
-                    ArithmeticTarget::IMM8 => (self.pc + 2, 8),
-                    _ => (self.pc + 1, 4),
+                    ArithmeticTarget::IMM8 => self.pc + 2,
+                    _ => self.pc + 1,
                 }
             }
 
@@ -77,7 +81,7 @@ impl CPU {
                     ArithmeticTarget::A    => self.reg.a = self.sub(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.sub(self.bus.read_byte(self.pc + 1)),
                 };
-                // return next PC value
+
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -96,7 +100,7 @@ impl CPU {
                     ArithmeticTarget::A    => self.reg.a = self.and(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.and(self.bus.read_byte(self.pc + 1)),
                 };
-                // return next PC value
+
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -115,7 +119,7 @@ impl CPU {
                     ArithmeticTarget::A    => self.reg.a = self.or(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.or(self.bus.read_byte(self.pc + 1)),
                 };
-                // return next PC value
+
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -134,7 +138,7 @@ impl CPU {
                     ArithmeticTarget::A    => self.reg.a = self.adc(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.adc(self.bus.read_byte(self.pc + 1)),
                 };
-                // return next PC value
+
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -153,7 +157,7 @@ impl CPU {
                     ArithmeticTarget::A    => self.reg.a = self.sbc(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.sbc(self.bus.read_byte(self.pc + 1)),
                 };
-                // return next PC value
+
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -172,7 +176,7 @@ impl CPU {
                     ArithmeticTarget::A    => self.reg.a = self.xor(self.reg.a),
                     ArithmeticTarget::IMM8 => self.reg.a = self.xor(self.bus.read_byte(self.pc + 1)),
                 };
-                // return next PC value
+
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -181,7 +185,7 @@ impl CPU {
 
             Instruction::CP(target) => {
                 match target {
-                    // perform subtract but only update flags
+                    // perform subtraction but only update flags
                     ArithmeticTarget::B    => self.sub(self.reg.b),
                     ArithmeticTarget::C    => self.sub(self.reg.c),
                     ArithmeticTarget::D    => self.sub(self.reg.d),
@@ -192,7 +196,7 @@ impl CPU {
                     ArithmeticTarget::A    => self.sub(self.reg.a),
                     ArithmeticTarget::IMM8 => self.sub(self.bus.read_byte(self.pc + 1)),
                 };
-                // return next PC value
+
                 match target {
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
@@ -215,6 +219,7 @@ impl CPU {
                     ArithmeticTarget::A    => self.reg.a = self.inc(self.reg.a),
                     _ => panic!("Undefined INC ArithmeticTarget"),
                 };
+
                 self.pc + 1
             }
 
@@ -234,6 +239,7 @@ impl CPU {
                     ArithmeticTarget::A    => self.reg.a = self.dec(self.reg.a),
                     _ => panic!("Undefined DEC ArithmeticTarget"),
                 };
+
                 self.pc + 1
             }
 
@@ -245,6 +251,7 @@ impl CPU {
                     ArithmeticTarget16::SP => self.sp = self.sp.wrapping_add(1),
                     _ => panic!("Undefined INC16 ArithmeticTarget"),
                 };
+
                 self.pc + 1
             }
 
@@ -271,7 +278,7 @@ impl CPU {
                         self.sp = self.sp.wrapping_add(imm as u16);
                     }
                 };
-                // return next PC value
+
                 match target {
                     ArithmeticTarget16::SPIMM => self.pc + 2,
                     _ => self.pc + 1,
