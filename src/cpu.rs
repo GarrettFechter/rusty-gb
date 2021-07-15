@@ -39,11 +39,11 @@ pub struct CPU {
 }
 
 impl CPU {
-    // Execute given instruction and return next pc
-    fn execute(&mut self, instruction: Instruction) -> u16 {
+    // Execute given instruction and return (next pc, extra cycles used)
+    fn execute(&mut self, instruction: Instruction) -> (u16, u16) {
 
         if self.is_stopped || self.is_halted {
-            return self.pc;
+            return (self.pc, 1);
         }
 
         match instruction {
@@ -62,11 +62,11 @@ impl CPU {
                 };
 
                 // Return next pc
-                match target {
+                (match target {
                     ArithmeticTarget::HL |
                     ArithmeticTarget::IMM8 => self.pc + 2,
                     _ => self.pc + 1,
-                }
+                }, 0)
             }
 
             Instruction::SUB(target) => {
@@ -440,6 +440,8 @@ impl CPU {
                     self.push((return_pc >> 8) as u8);
                     self.push((return_pc & 0xFF) as u8);
                     (self.bus.read_byte(self.pc + 1) as u16) | ((self.bus.read_byte(self.pc + 2) << 8) as u16)
+
+                    // TODO - 12 extra cycles if ???
                 }
                 else {
                     self.pc + 3
@@ -463,6 +465,7 @@ impl CPU {
                     let pch = self.pop();
                     let pcl = self.pop();
                     (pch << 8) as u16 | (pcl as u16)
+                    // TODO - 12 extra cycles if ???
                 }
                 else {
                     self.pc + 1
@@ -501,6 +504,7 @@ impl CPU {
                         JumpAddr::HL    => self.reg.get_hl(),
                         JumpAddr::REL   => self.pc.wrapping_add(self.bus.read_byte(self.pc + 1) as u16),
                     }
+                    // TODO - 4 extra cycles if taking jump (?)
                 }
                 else {
                     // didn't jump, get next pc
@@ -595,15 +599,15 @@ impl CPU {
             instruction_byte = self.bus.read_byte(self.pc + 1);
         }
 
-        let (next_pc, cycles_used) = if let Some(instruction) = Instruction::from_byte(instruction_byte, prefixed) {
-            self.execute(instruction)
+        let next_pc = self.pc;
+
+        if let (cycles_used, Some(i)) = Instruction::from_byte(instruction_byte, prefixed) {
+            let (self.pc, extra_cyles) = self.execute(i);
+            // sleep for (cycles_used * clock frequency) / fast forward
         } else {
             let description = format!("0x{}{:x}", if prefixed { "CB" } else { "" }, instruction_byte);
             panic!("Unknown instruction {}", description);
         };
-
-        self.pc = next_pc;
-        // sleep for (cycles_used * clock frequency) / fast forward
     }
 
     // Return A + value and update flags: Z 0 H C
