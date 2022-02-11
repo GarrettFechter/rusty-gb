@@ -39,6 +39,34 @@ pub struct CPU {
 }
 
 impl CPU {
+    fn new() -> CPU {
+        CPU {
+            reg: Registers {
+            a: 0,
+            b: 0,
+            c: 0,
+            d: 0,
+            e: 0,
+            f: FlagsRegister{
+                zero:       false,
+                subtract:   false,
+                half_carry: false,
+                carry:      false,
+            },
+            h: 0,
+            l: 0,
+        },
+        bus: MemoryBus {
+            memory: [0; 0xFFFF],
+        },
+        pc: 0,
+        sp: 0,
+        interrupt_enable: true,
+        is_halted: true,
+        is_stopped: true,
+        }
+    }
+
     // Executes given instruction and returns next pc
     fn execute(&mut self, instruction: Instruction) -> u16 {
         if self.is_stopped || self.is_halted {
@@ -708,3 +736,6 @@ impl CPU {
         value
     }
 }
+
+#[cfg(test)]
+mod test_cpu;
