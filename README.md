@@ -1,4 +1,5 @@
 # rusty-gb
+[![Coverage Status](https://coveralls.io/repos/github/GarrettFechter/rusty-gb/badge.svg)](https://coveralls.io/github/GarrettFechter/rusty-gb)
 
 A Game Boy emulator in Rust
 
