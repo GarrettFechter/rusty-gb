@@ -374,12 +374,14 @@ impl CPU {
                             LoadByteSource::H    => self.reg.h,
                             LoadByteSource::L    => self.reg.l,
                             LoadByteSource::HLI  => {
-                                let s = self.bus.read_byte((self.reg.h << 8) as u16 | self.reg.l as u16);
+                                // TODO let s = self.bus.read_byte((self.reg.h << 8) as u16 | self.reg.l as u16);
+                                let s = 0;
                                 self.reg.set_hl(self.reg.get_hl().wrapping_add(1));
                                 s
                             },
                             LoadByteSource::HLD  => {
-                                let s = self.bus.read_byte((self.reg.h << 8) as u16 | (self.reg.l) as u16);
+                                // TODO let s = self.bus.read_byte((self.reg.h << 8) as u16 | (self.reg.l) as u16);
+                                let s = 0;
                                 self.reg.set_hl(self.reg.get_hl().wrapping_sub(1));
                                 s
                             },
@@ -390,7 +392,8 @@ impl CPU {
                             LoadByteSource::CA8   => self.bus.read_byte(0xFF00 | self.reg.c as u16),
                             LoadByteSource::A16  => {
                                 // pc+1 holds LSB, pc+2 holds MSB
-                                let addr = self.bus.read_byte(self.pc + 1) as u16 | ((self.bus.read_byte(self.pc + 2) << 8) as u16);
+                                // let addr = self.bus.read_byte(self.pc + 1) as u16 | ((self.bus.read_byte(self.pc + 2) << 8) as u16);
+                                let addr = 0;
                                 self.bus.read_byte(addr)
                             },
                             LoadByteSource::IMM8 => self.bus.read_byte(self.pc + 1),
@@ -425,7 +428,8 @@ impl CPU {
                             },
                             LoadByteDestination::A16 => {
                                 // pc+1 holds LSB, pc+2 holds MSB
-                                let addr = self.bus.read_byte(self.pc + 1) as u16 | (self.bus.read_byte(self.pc + 2) << 8) as u16;
+                                // TODO let addr = self.bus.read_byte(self.pc + 1) as u16 | (self.bus.read_byte(self.pc + 2) << 8) as u16;
+                                let addr = 0;
                                 self.bus.write_byte(addr, source_value)
                             },
                         }
@@ -456,10 +460,12 @@ impl CPU {
                 }
                 {
                     // save pc and return new pc
-                    let return_pc = self.pc + 3;
+                    // TODO let return_pc = self.pc + 3;
+                    let return_pc = 0;
                     self.push((return_pc >> 8) as u8);
                     self.push((return_pc & 0xFF) as u8);
-                    (self.bus.read_byte(self.pc + 1) as u16) | ((self.bus.read_byte(self.pc + 2) << 8) as u16)
+                    // TODO (self.bus.read_byte(self.pc + 1) as u16) | ((self.bus.read_byte(self.pc + 2) << 8) as u16)
+                    0
                 }
                 else {
                     self.pc + 3
@@ -482,7 +488,8 @@ impl CPU {
                 {
                     let pch = self.pop();
                     let pcl = self.pop();
-                    (pch << 8) as u16 | (pcl as u16)
+                    // TODO (pch << 8) as u16 | (pcl as u16)
+                    0
                 }
                 else {
                     self.pc + 1
@@ -517,7 +524,7 @@ impl CPU {
                 {
                     // taking jump, return next pc
                     match addr_type {
-                        JumpAddr::IMM16 => (self.bus.read_byte(self.pc + 1) as u16) | ((self.bus.read_byte(self.pc + 2) << 8) as u16),
+                        JumpAddr::IMM16 => 0, // TODO (self.bus.read_byte(self.pc + 1) as u16) | ((self.bus.read_byte(self.pc + 2) << 8) as u16),
                         JumpAddr::HL    => self.reg.get_hl(),
                         JumpAddr::REL   => self.pc.wrapping_add(self.bus.read_byte(self.pc + 1) as u16),
                     }
