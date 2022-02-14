@@ -10,7 +10,7 @@ docker run --security-opt seccomp=unconfined -v "${PWD}:/volume" xd009642/tarpau
 # but will a new docker container really get created at this very second?
 # probably not...
 CONTAINER_NAME=`docker ps --last 1 -q --format "{{.Names}}"`
-docker cp $CONTAINER_NAME:/volume/tarpaulin-report.html .
+docker cp $CONTAINER_NAME:/volume/rusty-gb/tarpaulin-report.html .
 
 # expects windows environment
 explorer.exe tarpaulin-report.html
