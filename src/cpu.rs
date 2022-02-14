@@ -60,7 +60,7 @@ impl CPU {
             memory: [0; 0xFFFF],
         },
         pc: 0,
-        sp: 0,
+        sp: 0xFFFF,
         interrupt_enable: true,
         is_halted: true,
         is_stopped: true,
