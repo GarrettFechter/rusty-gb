@@ -163,4 +163,16 @@ fn test_push_pop() {
     assert_eq!(0x00, cpu.pop());
 }
 
-// test Instructions
+// test Instructions with cpu.execute()
+
+#[test]
+fn test_ld() {
+    let mut cpu = CPU::new();
+    let instruction = Instruction::LD(LoadType::Byte(LoadByteDestination::A, LoadByteSource::B));
+    cpu.reg.b = 0xF1;
+    cpu.is_halted = false;
+    cpu.is_stopped = false;
+    cpu.execute(instruction);
+    assert_eq!(cpu.reg.b, cpu.reg.a);
+    assert_eq!(cpu.reg.a, 0xF1);
+}
