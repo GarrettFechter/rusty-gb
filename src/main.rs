@@ -5,10 +5,13 @@ use cpu::Registers;
 use cpu::registers::FlagsRegister;
 
 #[allow(dead_code)]
+// Controller to run gameboy emulator
 fn main() {
-    let my_memorybus = MemoryBus {
+    let memory = MemoryBus {
         memory: [0; 0xFFFF],
     };
+
+    // read instructions into memory
 
     let fr = FlagsRegister {
         zero:       false,
@@ -28,9 +31,9 @@ fn main() {
         l: 0,
     };
 
-    let my_cpu = CPU {
+    let mut my_cpu = CPU {
         reg: my_registers,
-        bus: my_memorybus,
+        bus: memory,
         pc: 0,
         sp: 0xFFFF,
         interrupt_enable: false,
@@ -39,4 +42,8 @@ fn main() {
     };
 
     assert!(my_cpu.is_halted);
+
+    loop {
+        my_cpu.step();
+    }
 }

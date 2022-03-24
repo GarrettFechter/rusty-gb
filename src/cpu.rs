@@ -607,7 +607,7 @@ impl CPU {
     }
 
     // Reads and executes instruction at pc
-    fn step(&mut self) {
+    pub fn step(&mut self) {
         let mut instruction_byte = self.bus.read_byte(self.pc);
         let prefixed = instruction_byte == 0xCB;
 
@@ -621,6 +621,7 @@ impl CPU {
             let description = format!("0x{}{:x}", if prefixed { "CB" } else { "" }, instruction_byte);
             panic!("Unknown instruction {}", description);
         };
+        // sleep here for cpu timing?
 
         self.pc = next_pc;
     }
