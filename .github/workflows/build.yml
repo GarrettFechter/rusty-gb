@@ -1,13 +1,16 @@
 name: build
 
+# Controls when the workflow will run
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
-  pull_request_target:
+  pull_request:
     branches:
       - master
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   test:
     name: build
