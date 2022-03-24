@@ -7,9 +7,11 @@ use cpu::registers::FlagsRegister;
 #[allow(dead_code)]
 // Controller to run gameboy emulator
 fn main() {
-    let memory = MemoryBus {
+    let mut memory = MemoryBus {
         memory: [0; 0xFFFF],
     };
+
+    memory.memory[0] = 0x00;
 
     // read instructions into memory
 
@@ -41,6 +43,7 @@ fn main() {
         is_stopped: false,
     };
 
+    my_cpu.step();
     assert!(my_cpu.is_halted);
 
     loop {

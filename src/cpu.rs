@@ -11,6 +11,9 @@ pub use self::instructions::ControlCondition;
 pub use self::instructions::RstValue;
 pub use self::instructions::JumpAddr;
 
+pub mod instruction_cycle_table;
+pub use self::instruction_cycle_table::get_cycle_count;
+
 pub mod registers;
 pub use self::registers::Registers;
 pub use self::registers::FlagsRegister;
@@ -622,6 +625,7 @@ impl CPU {
             panic!("Unknown instruction {}", description);
         };
         // sleep here for cpu timing?
+        println!("Should sleep for {} cycles", get_cycle_count(instruction_byte, prefixed));
 
         self.pc = next_pc;
     }
