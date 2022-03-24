@@ -6,12 +6,12 @@ A Game Boy emulator in Rust
 
 ## Goals
 * High-level Game Boy (DMG-01) emulation
-* Play Tetris
-* Play Pokemon
+* Play some games I like
 
 ## Non-Goals
 * Cycle-accurate emulation
 * Serial cable support
+* Perfectly emulate all games
 
 ## Status
 Check commit dates for recent activity
@@ -24,7 +24,7 @@ Check commit dates for recent activity
   - [x] jump, call, return, reset instructions
   - [x] misc instructions
   - [ ] 0xCB prefixed instructions
-  - [ ] limited unit testing
+  - [~] limited unit testing
   - [ ] integration testing by comparing to register values in BGB (Wine) after running a game?
   - [ ] cpu timing
 - [ ] Interrupt Controller

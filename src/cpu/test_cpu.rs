@@ -176,3 +176,6 @@ fn test_ld() {
     assert_eq!(cpu.reg.b, cpu.reg.a);
     assert_eq!(cpu.reg.a, 0xF1);
 }
+
+// testing instructions with the whole instruction enum is painful, going to use
+// Instruction::from_byte and opcode chart to simplify testing commands
