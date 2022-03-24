@@ -31,7 +31,7 @@ Check commit dates for recent activity
   - [ ] 0xCB prefixed instructions
   - [~] limited unit testing
   - [ ] integration testing by comparing to register values in BGB (Wine) after running a game?
-  - [ ] cpu timing
+  - [~] cpu timing
 - [ ] Interrupt Controller
 - [ ] Timers
 - [ ] Pixel Processing Unit (PPU) with SDL2
