@@ -3,6 +3,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/GarrettFechter/rusty-gb/badge.svg?kill_cache=pls)](https://coveralls.io/github/GarrettFechter/rusty-gb)
 
 A Game Boy emulator in Rust
+
 Don't use ROMs you don't have the rights to
 
 ## Goals
