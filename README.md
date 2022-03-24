@@ -3,6 +3,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/GarrettFechter/rusty-gb/badge.svg?kill_cache=pls)](https://coveralls.io/github/GarrettFechter/rusty-gb)
 
 A Game Boy emulator in Rust
+Don't use ROMs you don't have the rights to
 
 ## Goals
 * High-level Game Boy (DMG-01) emulation
@@ -12,6 +13,10 @@ A Game Boy emulator in Rust
 * Cycle-accurate emulation
 * Serial cable support
 * Perfectly emulate all games
+
+## Dependencies
+* Requires SDL2.0 development libraries (see [rust-sdl2](https://github.com/Rust-SDL2/rust-sdl2))
+* The included SDL dll is for runnings on Windows
 
 ## Status
 Check commit dates for recent activity
@@ -29,10 +34,9 @@ Check commit dates for recent activity
   - [ ] cpu timing
 - [ ] Interrupt Controller
 - [ ] Timers
-- [ ] Pixel Processing Unit (PPU) with SDL2(?) implementation
+- [ ] Pixel Processing Unit (PPU) with SDL2
   - [ ] run boot ROM
   - [ ] create manual boot ROM logo
-  - [ ] play Tetris
 - [ ] Sound Controller
   - [ ] Channel 1 ("Pulse A")
   - [ ] Channel 2 ("Pulse B")
