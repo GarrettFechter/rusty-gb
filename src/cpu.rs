@@ -1,3 +1,5 @@
+use std::{thread, time};
+
 pub mod instructions;
 pub use self::instructions::Instruction;
 pub use self::instructions::LoadByteDestination;
@@ -32,6 +34,8 @@ impl MemoryBus {
 }
 
 pub struct CPU {
+    pub step_delay: u64, // us aka (1 / fps) * 1000 * 1000
+    pub frequency: u64, // Hz
     pub reg: Registers,
     pub bus: MemoryBus,
     pub pc: u16,
@@ -43,7 +47,10 @@ pub struct CPU {
 
 impl CPU {
     fn new() -> CPU {
+        // create a CPU with default values
         CPU {
+            step_delay: 16750,
+            frequency: 4194304,
             reg: Registers {
             a: 0,
             b: 0,
@@ -640,7 +647,8 @@ impl CPU {
             panic!("Unknown instruction {}", description);
         };
         // sleep here for instruction_cycle_table + extra_cycles
-        println!("Should sleep for {} cycles", extra_cycles + get_cycle_count(instruction_byte, prefixed));
+        // println!("Should sleep for {} cycles", extra_cycles + get_cycle_count(instruction_byte, prefixed));
+        thread::sleep(time::Duration::from_micros(self.step_delay));
 
         self.pc = next_pc;
     }

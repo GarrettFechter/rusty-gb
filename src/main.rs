@@ -34,6 +34,8 @@ fn main() {
     };
 
     let mut my_cpu = CPU {
+        step_delay: 16750,
+        frequency: 4194304,
         reg: my_registers,
         bus: memory,
         pc: 0,
