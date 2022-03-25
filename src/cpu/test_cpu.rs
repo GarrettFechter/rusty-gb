@@ -179,3 +179,16 @@ fn test_ld() {
 
 // testing instructions with the whole instruction enum is painful, going to use
 // Instruction::from_byte and opcode chart to simplify testing commands
+
+#[test]
+fn test_sub_from_byte() {
+    let mut cpu = CPU::new();
+    let instruction = Instruction::from_byte(0x90, false);
+    assert!(instruction.is_some());
+    cpu.reg.a = 0x9;
+    cpu.reg.b = 0x5;
+    cpu.is_halted = false;
+    cpu.is_stopped = false;
+    cpu.execute(instruction.unwrap());
+    assert_eq!(cpu.reg.a, 0x4);
+}
