@@ -70,12 +70,15 @@ impl CPU {
         }
     }
 
-    // Executes given instruction and returns next pc
-    fn execute(&mut self, instruction: Instruction) -> u16 {
+    // Executes given instruction and returns (next pc, extra_cycles)
+    fn execute(&mut self, instruction: Instruction) -> (u16, u8) {
         if self.is_stopped || self.is_halted {
-            return self.pc;
+            return (self.pc, 0);
         }
-        match instruction {
+
+        let mut extra_cycles = 0;
+
+        let next_pc = match instruction {
             Instruction::ADD(target) => {
                 match target {
                     ArithmeticTarget::B    => self.reg.a = self.add(self.reg.b),
@@ -458,6 +461,9 @@ impl CPU {
                     _ => panic!("Unsupported CALL ControlCondition"),
                 }
                 {
+                    // calling takes 12 extra cycles
+                    extra_cycles = 12;
+
                     // save pc and return new pc
                     let return_pc = self.pc + 3;
                     self.push((return_pc >> 8) as u8);
@@ -483,6 +489,10 @@ impl CPU {
                     }
                 }
                 {
+                    // returning takes 12 extra cycles
+                    extra_cycles = 12;
+
+                    // return to the pc on stack
                     let pch = self.pop();
                     let pcl = self.pop();
                     ((pch as u16) << 8) | (pcl as u16)
@@ -518,7 +528,10 @@ impl CPU {
                     _ => panic!("Unsupported JP ControlCondition"),
                 }
                 {
-                    // taking jump, return next pc
+                    // taking jump takes 4 extra cycles
+                    extra_cycles = 4;
+
+                    // return next pc
                     match addr_type {
                         JumpAddr::IMM16 => (self.bus.read_byte(self.pc + 1) as u16) | ((self.bus.read_byte(self.pc + 2) as u16) << 8),
                         JumpAddr::HL    => self.reg.get_hl(),
@@ -606,7 +619,9 @@ impl CPU {
                 self.reg.f.carry = true;
                 self.pc + 1
             }
-        }
+        };
+
+        (next_pc, extra_cycles)
     }
 
     // Reads and executes instruction at pc
@@ -618,14 +633,14 @@ impl CPU {
             instruction_byte = self.bus.read_byte(self.pc + 1);
         }
 
-        let next_pc = if let Some(instruction) = Instruction::from_byte(instruction_byte, prefixed) {
+        let (next_pc, extra_cycles) = if let Some(instruction) = Instruction::from_byte(instruction_byte, prefixed) {
             self.execute(instruction)
         } else {
             let description = format!("0x{}{:x}", if prefixed { "CB" } else { "" }, instruction_byte);
             panic!("Unknown instruction {}", description);
         };
-        // sleep here for cpu timing?
-        println!("Should sleep for {} cycles", get_cycle_count(instruction_byte, prefixed));
+        // sleep here for instruction_cycle_table + extra_cycles
+        println!("Should sleep for {} cycles", extra_cycles + get_cycle_count(instruction_byte, prefixed));
 
         self.pc = next_pc;
     }
