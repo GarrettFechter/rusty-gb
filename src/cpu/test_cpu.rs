@@ -192,3 +192,16 @@ fn test_sub_from_byte() {
     cpu.execute(instruction.unwrap());
     assert_eq!(cpu.reg.a, 0x4);
 }
+
+#[test]
+fn test_add_from_byte() {
+    let mut cpu = CPU::new();
+    let instruction = Instruction::from_byte(0x80, false);
+    assert!(instruction.is_some());
+    cpu.reg.a = 0x8;
+    cpu.reg.b = 0x4;
+    cpu.is_halted = false;
+    cpu.is_stopped = false;
+    cpu.execute(instruction.unwrap());
+    assert_eq!(cpu.reg.a, 0xC);
+}
