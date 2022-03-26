@@ -1,5 +1,3 @@
-use std::{thread, time};
-
 pub mod instructions;
 pub use self::instructions::Instruction;
 pub use self::instructions::LoadByteDestination;
@@ -34,8 +32,8 @@ impl MemoryBus {
 }
 
 pub struct CPU {
-    pub step_delay: u64, // us aka (1 / fps) * 1000 * 1000
     pub frequency: u64, // Hz
+    pub frame_delay: u64, // microseconds aka (1 / fps) * 1000 * 1000
     pub reg: Registers,
     pub bus: MemoryBus,
     pub pc: u16,
@@ -49,8 +47,8 @@ impl CPU {
     fn new() -> CPU {
         // create a CPU with default values
         CPU {
-            step_delay: 16750,
             frequency: 4194304,
+            frame_delay: 16750,
             reg: Registers {
             a: 0,
             b: 0,
@@ -632,7 +630,7 @@ impl CPU {
     }
 
     // Reads and executes instruction at pc
-    pub fn step(&mut self) {
+    pub fn step(&mut self) -> u8 {
         let mut instruction_byte = self.bus.read_byte(self.pc);
         let prefixed = instruction_byte == 0xCB;
 
@@ -646,11 +644,19 @@ impl CPU {
             let description = format!("0x{}{:x}", if prefixed { "CB" } else { "" }, instruction_byte);
             panic!("Unknown instruction {}", description);
         };
-        // sleep here for instruction_cycle_table + extra_cycles
-        // println!("Should sleep for {} cycles", extra_cycles + get_cycle_count(instruction_byte, prefixed));
-        thread::sleep(time::Duration::from_micros(self.step_delay));
 
         self.pc = next_pc;
+        extra_cycles + get_cycle_count(instruction_byte, prefixed)
+    }
+
+    // Execute however many instructions fit in a frame
+    pub fn frame_step(&mut self) {
+        let cycles_per_frame = (self.frequency * self.frame_delay ) / 1000 / 1000;
+        let mut current_frame_cycles = 0;
+
+        while current_frame_cycles < cycles_per_frame {
+            current_frame_cycles += self.step() as u64;
+        }
     }
 
     // Return A + value and update flags: Z 0 H C
