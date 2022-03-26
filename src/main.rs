@@ -1,3 +1,6 @@
+use std::{thread, time};
+use std::convert::TryInto;
+
 mod cpu;
 use cpu::CPU;
 use cpu::MemoryBus;
@@ -34,8 +37,8 @@ fn main() {
     };
 
     let mut my_cpu = CPU {
-        step_delay: 16750,
-        frequency: 4194304,
+        frequency: 4194304, // 4.194304 MHz
+        frame_delay: 16750, // equivalent to 59.7 fps
         reg: my_registers,
         bus: memory,
         pc: 0,
@@ -45,10 +48,13 @@ fn main() {
         is_stopped: false,
     };
 
+
     my_cpu.step();
     assert!(my_cpu.is_halted);
 
     loop {
-        my_cpu.step();
+        my_cpu.frame_step();
+        thread::sleep(time::Duration::from_micros(my_cpu.frame_delay));
     }
+
 }
