@@ -16,8 +16,6 @@ Don't use ROMs you don't have the rights to
 * Perfectly emulate all games
 
 ## Dependencies
-* Requires SDL2.0 development libraries (see [rust-sdl2](https://github.com/Rust-SDL2/rust-sdl2))
-* The included SDL dll is for runnings on Windows
 
 ## Status
 Check commit dates for recent activity

@@ -1,6 +1,9 @@
 use std::{thread, time};
 use std::convert::TryInto;
 
+mod ppu;
+use ppu::PPU;
+
 mod cpu;
 use cpu::CPU;
 use cpu::MemoryBus;
