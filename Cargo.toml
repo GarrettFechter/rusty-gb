@@ -3,9 +3,10 @@ name = "rusty-gb"
 version = "0.1.0"
 authors = ["Garrett-Fechter <garrett.fechter@gmail.com>"]
 
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = "0.7.0"
+# TODO - dynamic feature decreases compile time but should be removed before release
+bevy = { version = "0.7.0", features = ["dynamic"] }
