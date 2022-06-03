@@ -1,5 +1,5 @@
 use std::{thread, time};
-use std::convert::TryInto;
+// use std::convert::TryInto;
 
 mod ppu;
 use ppu::PPU;
