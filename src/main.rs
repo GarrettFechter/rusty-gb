@@ -1,15 +1,21 @@
 use std::{thread, time};
 
+// use wgpu;
+
 use bevy::{
     core::Time,
     prelude::*,
-    render::camera::OrthographicCameraBundle,
+    //render::camera::OrthographicCameraBundle,
     window::WindowDescriptor,
+    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
 };
 // use std::convert::TryInto;
 
+use bevy_pixels::prelude::*;
+use rand::prelude::*;
+
 mod ppu;
-use ppu::PPU;
+// use ppu::PPU;
 
 mod cpu;
 use cpu::CPU;
@@ -77,50 +83,52 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
-        .add_plugin(HelloPlugin)
+        .add_plugin(PixelsPlugin)
+        .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        .add_plugin(LogDiagnosticsPlugin::default())
+        //.add_system(draw)
+        .insert_resource(FPSTimer(Timer::from_seconds(30.0, true)))
+        .add_system_to_stage(PixelsStage::Draw, main_system)
+        //.add_system_to_stage(PixelsStage::Draw, draw)
         .run();
 
+    /*
+    let instances = wgpu::Instance::new(wgpu::Backends::VULKAN);
+    for adapter in instances.enumerate_adapters(wgpu::Backends::VULKAN) {
+        println!("{:?}", adapter.get_info());
+    }
+    */
 }
 
-#[derive(Component)]
-struct Person;
+struct FPSTimer(Timer);
 
-#[derive(Component)]
-struct Name(String);
+fn draw(
+    mut pixels_resource: ResMut<PixelsResource>) {
 
-fn add_people(mut commands: Commands) {
-    commands.spawn().insert(Person).insert(Name("John".to_string()));
-    commands.spawn().insert(Person).insert(Name("Bob".to_string()));
-    commands.spawn().insert(Person).insert(Name("Bill".to_string()));
-}
+    // fill with random data
+    let frame: &mut [u8] = pixels_resource.pixels.get_frame();
+    let random = rand::random::<u8>();
 
-struct GreetTimer(Timer);
-
-fn greet_people(
-    time: Res<Time>, mut timer: ResMut<GreetTimer>, query: Query<&Name, With<Person>>) {
-    // update time with the time elapsed since the last update
-    // // if that caused the timer to finished, say hello to everyone
-    if timer.0.tick(time.delta()).just_finished() {
-        for name in query.iter() {
-            println!("Hello, {}!", name.0);
-        }
+    // fill with random data
+    for i in 0..frame.len() {
+        frame[i] = random;
     }
 }
 
-fn hello_world() {
-    println!("Hello, world!");
-}
+fn main_system(
+    time: Res<Time>,
+    mut timer: ResMut<FPSTimer>,
+    mut pixels_resource: ResMut<PixelsResource>) {
 
-pub struct HelloPlugin;
+    if timer.0.tick(time.delta()).just_finished() {
+        info!("{:?}", time.delta_seconds());
+        info!("Updating frame");
+        // get mutable slice for pixel buffer
+        let frame: &mut [u8] = pixels_resource.pixels.get_frame();
 
-impl Plugin for HelloPlugin {
-    fn build(&self, app: &mut App) {
-        // true makes from_seconds repeat
-        app.insert_resource(GreetTimer(Timer::from_seconds(2.0, true)))
-            .add_startup_system(add_people)
-            .add_system(greet_people);
-        //.add_system(hello_world)
-        // app.add_resource(PPU::new());
-        // app.add_resource(CPU::new());
+        // fill with random data
+        for i in 0..frame.len() {
+            frame[i] = rand::random::<u8>();
+        }
     }
 }
