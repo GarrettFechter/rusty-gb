@@ -33,7 +33,7 @@ Check commit dates for recent activity
   - [x] cpu timing
 - [ ] Interrupt Controller
 - [ ] Timers
-- [ ] Pixel Processing Unit (PPU) with Bevy + wgpu
+- [ ] Pixel Processing Unit (PPU) with winit + Pixels
   - [ ] run boot ROM
   - [ ] create manual boot ROM logo
 - [ ] Sound Controller
@@ -62,9 +62,3 @@ Game Boy reference material - probably a subset of [this curated list of Game Bo
 * [GameBoy Opcode Summary](http://www.devrs.com/gb/files/opcodes.html), though this has a few typos
 * z80 CPU User Manual to describe some CPU instructions
 * [Bootstrap ROM contents](https://gbdev.gg8.se/wiki/articles/Gameboy_Bootstrap_ROM)
-
-wgpu, Bevy, and input reference material
-* https://sotrh.github.io/learn-wgpu/
-* https://github.com/gfx-rs/wgpu/blob/master/wgpu/examples/boids/draw.wgsl
-* https://bevy-cheatbook.github.io/introduction.html
-* https://github.com/Leafwing-Studios/leafwing_input_manager

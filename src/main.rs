@@ -1,17 +1,15 @@
 use std::{thread, time};
 
-// use wgpu;
+use winit::event::{Event, VirtualKeyCode};
+use winit::event_loop::{ControlFlow, EventLoop};
+use winit::window::WindowBuilder;
+use winit_input_helper::WinitInputHelper;
+use winit::dpi::LogicalSize;
 
-use bevy::{
-    core::Time,
-    prelude::*,
-    //render::camera::OrthographicCameraBundle,
-    window::WindowDescriptor,
-    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
-};
+use pixels::{Error, Pixels, SurfaceTexture};
+
 // use std::convert::TryInto;
 
-use bevy_pixels::prelude::*;
 use rand::prelude::*;
 
 mod ppu;
@@ -25,7 +23,7 @@ use cpu::registers::FlagsRegister;
 
 #[allow(dead_code)]
 // Controller to run gameboy emulator
-fn main() {
+fn main() -> Result<(), Error> {
     let mut memory = MemoryBus {
         memory: [0; 0xFFFF],
     };
@@ -69,66 +67,43 @@ fn main() {
     // assert!(my_cpu.is_halted);
 
     /*
-    loop {
-        my_cpu.frame_step();
-        thread::sleep(time::Duration::from_micros(my_cpu.frame_delay));
-    }
-    */
+       loop {
+       my_cpu.frame_step();
+       thread::sleep(time::Duration::from_micros(my_cpu.frame_delay));
+       }
+       */
 
-    App::new()
-        .insert_resource(WindowDescriptor {
-            title: "rusty-gb".to_string(),
-            width: 160.0,
-            height: 144.0,
-            ..Default::default()
-        })
-        .add_plugins(DefaultPlugins)
-        .add_plugin(PixelsPlugin)
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_plugin(LogDiagnosticsPlugin::default())
-        //.add_system(draw)
-        .insert_resource(FPSTimer(Timer::from_seconds(30.0, true)))
-        .add_system_to_stage(PixelsStage::Draw, main_system)
-        //.add_system_to_stage(PixelsStage::Draw, draw)
-        .run();
+    let mut input = WinitInputHelper::new();
 
-    /*
-    let instances = wgpu::Instance::new(wgpu::Backends::VULKAN);
-    for adapter in instances.enumerate_adapters(wgpu::Backends::VULKAN) {
-        println!("{:?}", adapter.get_info());
-    }
-    */
-}
+    let event_loop = EventLoop::new();
+    let window = WindowBuilder::new()
+        .with_title("rusty-gb")
+        .with_inner_size(LogicalSize::new(1000.0, 1000.0))
+        .build(&event_loop)
+        .unwrap();
 
-struct FPSTimer(Timer);
+    let window_size = window.inner_size();
+    let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
+    let mut pixels = Pixels::new(320, 320, surface_texture)?;
 
-fn draw(
-    mut pixels_resource: ResMut<PixelsResource>) {
-
-    // fill with random data
-    let frame: &mut [u8] = pixels_resource.pixels.get_frame();
-    let random = rand::random::<u8>();
-
-    // fill with random data
-    for i in 0..frame.len() {
-        frame[i] = random;
-    }
-}
-
-fn main_system(
-    time: Res<Time>,
-    mut timer: ResMut<FPSTimer>,
-    mut pixels_resource: ResMut<PixelsResource>) {
-
-    if timer.0.tick(time.delta()).just_finished() {
-        info!("{:?}", time.delta_seconds());
-        info!("Updating frame");
-        // get mutable slice for pixel buffer
-        let frame: &mut [u8] = pixels_resource.pixels.get_frame();
-
-        // fill with random data
-        for i in 0..frame.len() {
-            frame[i] = rand::random::<u8>();
+    event_loop.run(move |event, _, control_flow| {
+        if let Event::RedrawRequested(_) = event {
+            draw(pixels.get_frame());
+            if pixels.render().is_err() {
+                *control_flow = ControlFlow::Exit;
+                return;
+            }
         }
-    }
+
+        window.request_redraw();
+    });
+
+}
+
+fn draw(frame: &mut [u8]) {
+    let mut i = rand::random::<usize>() % frame.len();
+    i = i - (i % 4);
+
+    let rgba = [rand::random::<u8>(), rand::random::<u8>(), rand::random::<u8>(), 255];
+    frame[i..i+4].copy_from_slice(&rgba);
 }
