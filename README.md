@@ -16,8 +16,6 @@ Don't use ROMs you don't have the rights to
 * Perfectly emulate all games
 
 ## Dependencies
-* Requires SDL2.0 development libraries (see [rust-sdl2](https://github.com/Rust-SDL2/rust-sdl2))
-* The included SDL dll is for runnings on Windows
 
 ## Status
 Check commit dates for recent activity
@@ -35,7 +33,7 @@ Check commit dates for recent activity
   - [x] cpu timing
 - [ ] Interrupt Controller
 - [ ] Timers
-- [ ] Pixel Processing Unit (PPU) with SDL2
+- [ ] Pixel Processing Unit (PPU) with winit + Pixels
   - [ ] run boot ROM
   - [ ] create manual boot ROM logo
 - [ ] Sound Controller
@@ -54,7 +52,7 @@ Possible Extensions:
 - [ ] add Game Boy color support
 
 ## Reference Material
-This is all probably a subset of [this curated list of Game Boy development sources](https://gbdev.io/list.html)
+Game Boy reference material - probably a subset of [this curated list of Game Boy development sources](https://gbdev.io/list.html)
 * I heavily used [DMG-01: How to emulate a Game Boy](https://blog.ryanlevick.com/DMG-01/public/book/) by [Ryan Levick](https://github.com/rylev) as a starting point
 * [The Ultimate Game Boy Talk](https://youtu.be/HyzD8pNlpwI) as a fairly comprehensive overview
 * [Game Boy Technical Reference](https://gekkio.fi/files/gb-docs/gbctr.pdf) by [Gekkio](https://github.com/Gekkio). I also looked at some of his [Rust GB emulator](https://github.com/Gekkio/mooneye-gb), especially for the implementation of the DAA instruction
