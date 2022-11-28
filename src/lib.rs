@@ -1,4 +1,9 @@
+// standard
+use futures::executor;
 use std::{thread, time};
+
+#[cfg(target_arch="wasm32")]
+use wasm_bindgen::prelude::*;
 
 use winit::event::{Event, VirtualKeyCode};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -6,42 +11,26 @@ use winit::window::WindowBuilder;
 use winit_input_helper::WinitInputHelper;
 use winit::dpi::LogicalSize;
 
-use futures::executor;
-
 use pixels::{Pixels, SurfaceTexture};
 
-// use std::convert::TryInto;
-
-mod ppu;
-// use ppu::PPU;
-
+// internal
 mod cpu;
+mod ppu;
+
 use cpu::CPU;
 use cpu::MemoryBus;
 use cpu::Registers;
 use cpu::registers::FlagsRegister;
-
-#[cfg(target_arch="wasm32")]
-use wasm_bindgen::prelude::*;
+// use ppu::PPU;
 
 #[allow(dead_code)]
 #[cfg_attr(target_arch="wasm32", wasm_bindgen(start))]
 // Controller to run gameboy emulator
 pub fn run() {
+    configure_logger();
 
-    // configure logger based on arch
-    cfg_if::cfg_if! {
-        if #[cfg(target_arch = "wasm32")] {
-            std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-            console_log::init_with_level(log::Level::Warn).expect("Couldn't initialize logger");
-        } else {
-            env_logger::init();
-        }
-    }
-
-    // create gpu objects
-    let mut input = WinitInputHelper::new();
-
+    // initialize window
+    // let mut input = WinitInputHelper::new();
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
         .with_title("rusty-gb")
@@ -52,11 +41,10 @@ pub fn run() {
     let window_size = window.inner_size();
     let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
 
-    // configure gpu objects for wasm
+    // append window to web canvas
     #[cfg(target_arch = "wasm32")]
     {
-        // Winit prevents sizing with CSS, so we have to set
-        // the size manually when on web.
+        // set window size manually (winit prevents sizing with CSS)
         // use winit::dpi::PhysicalSize;
         // window.set_inner_size(PhysicalSize::new(1000, 1000));
         
@@ -72,15 +60,20 @@ pub fn run() {
             .expect("Unable to append to canvas")
     }
 
+    // initialize pixels
+    let mut pixels: Pixels = executor::block_on(
+        Pixels::new_async(320, 320, surface_texture)
+    ).unwrap();
 
-    // create rusty-gb objects
+    // initialize rusty-gb objects
     let mut memory = MemoryBus {
         memory: [0; 0xFFFF],
     };
 
     memory.memory[0] = 0x00;
 
-    // read instructions into memory
+    // TODO: load something into memory
+    //       maybe based on a param?
 
     let fr = FlagsRegister {
         zero:       false,
@@ -113,7 +106,6 @@ pub fn run() {
     };
 
 
-    my_cpu.step();
     // assert!(my_cpu.is_halted);
 
     /*
@@ -123,14 +115,14 @@ pub fn run() {
        }
        */
     
-    let mut pixels: Pixels = executor::block_on(
-        Pixels::new_async(320, 320, surface_texture)
-    ).unwrap();
 
 
     event_loop.run(move |event, _, control_flow| {
+        // my_cpu.step();
+
+        // TODO - move window stuff into PPU
         if let Event::RedrawRequested(_) = event {
-            draw(pixels.get_frame_mut());
+            populate_frame_random_rgba(pixels.get_frame_mut());
             if pixels.render().is_err() {
                 *control_flow = ControlFlow::Exit;
                 return;
@@ -141,10 +133,23 @@ pub fn run() {
     });
 }
 
-fn draw(frame: &mut [u8]) {
+fn populate_frame_random_rgba(frame: &mut [u8]) {
+    // update frame with random rgba values
     let mut i = rand::random::<usize>() % frame.len();
     i = i - (i % 4);
 
     let rgba = [rand::random::<u8>(), rand::random::<u8>(), rand::random::<u8>(), 255];
     frame[i..i+4].copy_from_slice(&rgba);
+}
+
+fn configure_logger() {
+    // configure logger based on target arch
+    cfg_if::cfg_if! {
+        if #[cfg(target_arch = "wasm32")] {
+            std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+            console_log::init_with_level(log::Level::Warn).expect("Couldn't initialize logger");
+        } else {
+            env_logger::init();
+        }
+    }
 }
