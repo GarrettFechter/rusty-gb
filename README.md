@@ -16,6 +16,14 @@ Don't use ROMs you don't have the rights to
 * Perfectly emulate all games
 
 ## Dependencies
+* rust
+* cargo
+* wasm-pack
+
+## Build targets
+* `cargo build`, `cargo test`, `cargo run`
+* `wasm-pack build --target web` will build a pkg folder with assets for wasm/wgpu
+  * open rusty_gb.html in browser (probably with simple local http-server)
 
 ## Status
 Check commit dates for recent activity
@@ -33,7 +41,8 @@ Check commit dates for recent activity
   - [x] cpu timing
 - [ ] Interrupt Controller
 - [ ] Timers
-- [ ] Pixel Processing Unit (PPU) with winit + Pixels
+- [ ] Pixel Processing Unit (PPU) with webgpu
+  - [ ] WASM support, to run in-browser
   - [ ] run boot ROM
   - [ ] create manual boot ROM logo
 - [ ] Sound Controller
@@ -43,8 +52,7 @@ Check commit dates for recent activity
   - [ ] Channel 4 ("Noise")
 
 Possible Extensions:
-- [ ] WASM support, to run in-browser
-  - [ ] publish on a website
+- [ ] publish on a website
 - [ ] fast forward (2x, 4x, 8x, 16x emulation)
 - [ ] save states (probably simply by copying all memory)
   - [ ] rewind 10 seconds

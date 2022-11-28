@@ -1,15 +1,37 @@
 [package]
-name = "rusty-gb"
+name = "rusty_gb_emu"
 version = "0.1.0"
 authors = ["Garrett-Fechter <garrett.fechter@gmail.com>"]
 
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "rusty_gb"
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # TODO - dynamic feature decreases compile time but should be removed before release
-winit = "0.26"
-pixels = "0.9.0"
+winit = "0.27"
+pixels = "0.10.0"
+env_logger = "0.9"
+log = "0.4"
 rand = "0.8"
 winit_input_helper = "0.12.0"
+cfg-if = "1" # some macro for platform-specific code
+getrandom = { version = "0.2", features = ["js"] }
+futures = "0.3"
+
+
+# dependencies for wasm32 target
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+console_error_panic_hook = "0.1.6"
+console_log = "0.2.0"
+pixels = "0.10.0"
+wgpu = { version = "0.13", features = ["webgl"]}
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4.30"
+web-sys = { version = "0.3", features = [
+    "Document",
+    "Window",
+    "Element",
+]}
