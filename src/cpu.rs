@@ -44,11 +44,11 @@ pub struct CPU {
 }
 
 impl CPU {
-    fn new() -> CPU {
+    pub fn new() -> CPU {
         // create a CPU with default values
         CPU {
-            frequency: 4194304,
-            frame_delay: 16750,
+            frequency: 4194304, // 4.194304 MHz
+            frame_delay: 16750, // equivalent to 59.7 fps
             reg: Registers {
             a: 0,
             b: 0,
