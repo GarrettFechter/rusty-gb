@@ -66,60 +66,17 @@ pub fn run() {
     ).unwrap();
 
     // initialize rusty-gb objects
-    let mut memory = MemoryBus {
-        memory: [0; 0xFFFF],
-    };
-
-    memory.memory[0] = 0x00;
+    let mut cpu = CPU::new();
+    cpu.bus.memory[0] = 0x00;
 
     // TODO: load something into memory
     //       maybe based on a param?
 
-    let fr = FlagsRegister {
-        zero:       false,
-        subtract:   false,
-        half_carry: false,
-        carry:      false,
-    };
-
-    let my_registers = Registers {
-        a: 0,
-        b: 0,
-        c: 0,
-        d: 0,
-        e: 0,
-        f: fr,
-        h: 0,
-        l: 0,
-    };
-
-    let mut my_cpu = CPU {
-        frequency: 4194304, // 4.194304 MHz
-        frame_delay: 16750, // equivalent to 59.7 fps
-        reg: my_registers,
-        bus: memory,
-        pc: 0,
-        sp: 0xFFFF,
-        interrupt_enable: false,
-        is_halted: false,
-        is_stopped: false,
-    };
-
-
-    // assert!(my_cpu.is_halted);
-
-    /*
-       loop {
-       my_cpu.frame_step();
-       thread::sleep(time::Duration::from_micros(my_cpu.frame_delay));
-       }
-       */
-    
+    cpu.step();
+    assert!(cpu.is_halted);
 
 
     event_loop.run(move |event, _, control_flow| {
-        // my_cpu.step();
-
         // TODO - move window stuff into PPU
         if let Event::RedrawRequested(_) = event {
             populate_frame_random_rgba(pixels.get_frame_mut());
@@ -129,7 +86,9 @@ pub fn run() {
             }
         }
 
+        // cpu.frame_step();
         window.request_redraw();
+        // thread::sleep(time::Duration::from_micros(cpu.frame_delay));
     });
 }
 
