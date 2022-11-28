@@ -3,7 +3,11 @@ name = "rusty_gb_emu"
 version = "0.1.0"
 authors = ["Garrett-Fechter <garrett.fechter@gmail.com>"]
 
+description = "A Game Boy emulator in Rust"
 edition = "2021"
+license = "MPL-2.0"
+readme = "README.md"
+repository = "https://github.com/GarrettFechter/rusty-gb"
 
 [lib]
 name = "rusty_gb"
