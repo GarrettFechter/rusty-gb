@@ -1,5 +1,8 @@
 use futures::executor;
 
+pub mod ppu_registers;
+pub use ppu_registers::*;
+
 #[cfg(target_arch="wasm32")]
 use wasm_bindgen::prelude::*;
 
@@ -15,6 +18,12 @@ pub struct PPU {
     input: WinitInputHelper,
     pixels: Pixels,
     window: Window,
+    control_reg: PPUControlRegister,
+    status_reg: PPUStatusRegister,
+    vertical_scroll_reg: VerticalScrollRegister,
+    horizontal_scroll_reg: HorizontalScrollRegister,
+    scaline_reg: ScanlineRegister,
+    scanline_compare_reg: ScanlineCompareRegister,
 }
 
 impl PPU {
@@ -41,6 +50,12 @@ impl PPU {
             input,
             pixels,
             window,
+            control_reg: PPUControlRegister::new(),
+            status_reg: PPUStatusRegister::new(),
+            vertical_scroll_reg: VerticalScrollRegister { scy: 0 },
+            horizontal_scroll_reg: HorizontalScrollRegister { scx: 0 },
+            scaline_reg: ScanlineRegister { ly: 0 },
+            scanline_compare_reg: ScanlineCompareRegister { lyc: 0 },
         }
     }
 
