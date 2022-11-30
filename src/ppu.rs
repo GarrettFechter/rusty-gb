@@ -28,22 +28,20 @@ impl PPU {
         let window_size = window.inner_size();
         let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
 
+        // append window to web canvas
+        #[cfg(target_arch = "wasm32")]
+            PPU::append_window_to_web_canvas(&window);
+
         let pixels = executor::block_on(
             Pixels::new_async(320, 320, surface_texture))
             .unwrap();
         let input = WinitInputHelper::new();
 
-        let mut ppu = PPU {
+        PPU {
             input,
             pixels,
             window,
-        };
-
-        // append window to web canvas
-        #[cfg(target_arch = "wasm32")]
-            ppu.append_window_to_web_canvas();
-
-        ppu
+        }
     }
 
     pub fn render(&mut self) -> Result<(), Error> {
@@ -56,7 +54,7 @@ impl PPU {
     }
 
     #[cfg(target_arch="wasm32")]
-    fn append_window_to_web_canvas(&mut self) {
+    fn append_window_to_web_canvas(window: &Window) {
         // set window size manually (winit prevents sizing with CSS)
         // use winit::dpi::PhysicalSize;
         // window.set_inner_size(PhysicalSize::new(1000, 1000));
@@ -66,7 +64,7 @@ impl PPU {
             .and_then(|win| win.document())
             .and_then(|doc| {
                 let dst = doc.get_element_by_id("rusty_gb_body")?;
-                let canvas = web_sys::Element::from(self.window.canvas());
+                let canvas = web_sys::Element::from(window.canvas());
                 dst.append_child(&canvas).ok()?;
                 Some(())
             })
