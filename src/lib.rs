@@ -11,10 +11,8 @@ mod cpu;
 use cpu::CPU;
 use cpu::MemoryBus;
 use cpu::Registers;
-use cpu::registers::FlagsRegister;
-
-mod ppu;
-use ppu::PPU;
+use cpu::cpu_registers::FlagsRegister;
+use cpu::PPU;
 
 #[allow(dead_code)]
 #[cfg_attr(target_arch="wasm32", wasm_bindgen(start))]
@@ -25,10 +23,8 @@ pub fn run() {
     let event_loop = EventLoop::new();
 
     // initialize rusty-gb objects
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new(&event_loop);
     cpu.bus.memory[0] = 0x00;
-
-    let mut ppu = PPU::new(&event_loop);
 
     // TODO: load something into memory
     //       maybe based on a param?
@@ -39,14 +35,21 @@ pub fn run() {
 
     event_loop.run(move |event, _, control_flow| {
         if let Event::RedrawRequested(_) = event {
-            if ppu.render().is_err() {
-                *control_flow = ControlFlow::Exit;
-                return;
-            }
+            if cpu.ppu
+                .as_mut()
+                .expect("The PPU should have been initialized")
+                .render()
+                .is_err() {
+                    *control_flow = ControlFlow::Exit;
+                    return;
+                }
         }
 
         // cpu.frame_step();
-        ppu.request_refresh();
+        cpu.ppu
+            .as_mut()
+            .expect("The PPU should have been initialized")
+            .request_refresh();
         // thread::sleep(time::Duration::from_micros(cpu.frame_delay));
     });
 }
