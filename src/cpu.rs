@@ -18,6 +18,11 @@ pub mod registers;
 pub use self::registers::Registers;
 pub use self::registers::FlagsRegister;
 
+pub mod ppu;
+pub use ppu::PPU;
+
+use winit::event_loop::{EventLoop};
+
 pub struct MemoryBus {
     pub memory: [u8; 0xFFFF],
 }
@@ -41,37 +46,39 @@ pub struct CPU {
     pub interrupt_enable: bool,
     pub is_halted: bool,
     pub is_stopped: bool,
+    pub ppu: PPU,
 }
 
 impl CPU {
-    pub fn new() -> CPU {
+    pub fn new(event_loop: &EventLoop<()>) -> CPU {
         // create a CPU with default values
         CPU {
             frequency: 4194304, // 4.194304 MHz
             frame_delay: 16750, // equivalent to 59.7 fps
             reg: Registers {
-            a: 0,
-            b: 0,
-            c: 0,
-            d: 0,
-            e: 0,
-            f: FlagsRegister{
-                zero:       false,
-                subtract:   false,
-                half_carry: false,
-                carry:      false,
+                a: 0,
+                b: 0,
+                c: 0,
+                d: 0,
+                e: 0,
+                f: FlagsRegister{
+                    zero:       false,
+                    subtract:   false,
+                    half_carry: false,
+                    carry:      false,
+                },
+                h: 0,
+                l: 0,
             },
-            h: 0,
-            l: 0,
-        },
-        bus: MemoryBus {
-            memory: [0; 0xFFFF],
-        },
-        pc: 0,
-        sp: 0xFFFF,
-        interrupt_enable: true,
-        is_halted: true,
-        is_stopped: true,
+            bus: MemoryBus {
+                memory: [0; 0xFFFF],
+            },
+            pc: 0,
+            sp: 0xFFFF,
+            interrupt_enable: true,
+            is_halted: true,
+            is_stopped: true,
+            ppu: PPU::new(event_loop)
         }
     }
 

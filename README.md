@@ -39,12 +39,15 @@ Check commit dates for recent activity
   - [~] limited unit testing
   - [ ] integration testing by comparing to register values in BGB (Wine) after running a game?
   - [x] cpu timing
-- [ ] Interrupt Controller
-- [ ] Timers
-- [ ] Pixel Processing Unit (PPU) with webgpu
-  - [ ] WASM support, to run in-browser
+- [~] Pixel Processing Unit (PPU) with webgpu
+  - [~] WASM support, to run in-browser
+  - [ ] Registers
+  - [ ] Render
   - [ ] run boot ROM
   - [ ] create manual boot ROM logo
+- [ ] Interrupt Controller
+- [ ] Timers
+- [ ] MBC3 A and B support
 - [ ] Sound Controller
   - [ ] Channel 1 ("Pulse A")
   - [ ] Channel 2 ("Pulse B")
