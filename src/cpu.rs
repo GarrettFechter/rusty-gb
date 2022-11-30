@@ -19,7 +19,7 @@ pub use self::cpu_registers::Registers;
 pub use self::cpu_registers::FlagsRegister;
 
 pub mod ppu;
-pub use ppu::PPU;
+pub use self::ppu::PPU;
 
 use winit::event_loop::{EventLoop};
 
