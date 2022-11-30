@@ -11,7 +11,7 @@ mod cpu;
 use cpu::CPU;
 use cpu::MemoryBus;
 use cpu::Registers;
-use cpu::registers::FlagsRegister;
+use cpu::cpu_registers::FlagsRegister;
 use cpu::PPU;
 
 #[allow(dead_code)]
@@ -35,14 +35,21 @@ pub fn run() {
 
     event_loop.run(move |event, _, control_flow| {
         if let Event::RedrawRequested(_) = event {
-            if cpu.ppu.render().is_err() {
-                *control_flow = ControlFlow::Exit;
-                return;
-            }
+            if cpu.ppu
+                .as_mut()
+                .expect("The PPU should have been initialized")
+                .render()
+                .is_err() {
+                    *control_flow = ControlFlow::Exit;
+                    return;
+                }
         }
 
         // cpu.frame_step();
-        cpu.ppu.request_refresh();
+        cpu.ppu
+            .as_mut()
+            .expect("The PPU should have been initialized")
+            .request_refresh();
         // thread::sleep(time::Duration::from_micros(cpu.frame_delay));
     });
 }

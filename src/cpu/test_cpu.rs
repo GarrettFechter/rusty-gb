@@ -10,7 +10,7 @@ impl CPU {
 
 #[test]
 fn test_add() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     // test add empty
     let add = cpu.add(0xFF);
     assert_eq!(add, 0xFF);
@@ -38,7 +38,7 @@ fn test_add() {
 
 #[test]
 fn test_add16() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     let add = cpu.add16(0x11, 0x22);
     assert_eq!(add, 0x33);
     cpu.check_subtract_false();
@@ -46,7 +46,7 @@ fn test_add16() {
 
 #[test]
 fn test_adc() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     cpu.reg.f.carry = true;
     cpu.reg.a = 0x01;
     let adc = cpu.adc(0xFD);
@@ -62,7 +62,7 @@ fn test_adc() {
 
 #[test]
 fn test_sub() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     cpu.reg.a = 0x01;
     let sub = cpu.sub(0x01);
     assert_eq!(sub, 0x00);
@@ -76,7 +76,7 @@ fn test_sub() {
 
 #[test]
 fn test_sbc() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     cpu.reg.f.carry = true;
     cpu.reg.a = 0x02;
     let sbc = cpu.sbc(0x01);
@@ -95,28 +95,28 @@ fn test_sbc() {
 
 #[test]
 fn test_and() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     cpu.reg.a = 0xF0;
     assert_eq!(0x00, cpu.and(0x0F));
 }
 
 #[test]
 fn test_or() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     cpu.reg.a = 0xF0;
     assert_eq!(0xFF, cpu.or(0x0F));
 }
 
 #[test]
 fn test_xor() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     cpu.reg.a = 0xFF;
     assert_eq!(0x55, cpu.xor(0xAA));
 }
 
 #[test]
 fn test_inc() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     assert_eq!(0x01, cpu.inc(0x00));
     assert_eq!(0x02, cpu.inc(0x01));
     assert_eq!(cpu.reg.f.carry, false);
@@ -126,7 +126,7 @@ fn test_inc() {
 
 #[test]
 fn test_dec() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     assert_eq!(0x01, cpu.dec(0x02));
     assert_eq!(0x00, cpu.dec(0x01));
     assert_eq!(cpu.reg.f.carry, false);
@@ -136,14 +136,14 @@ fn test_dec() {
 
 #[test]
 fn test_push() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     cpu.push(0x11);
     assert_eq!(cpu.bus.read_byte(cpu.sp), 0x11);
 }
 
 #[test]
 fn test_push_pop() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     for i in 0..10 {
         cpu.push(i);
     }
@@ -167,7 +167,7 @@ fn test_push_pop() {
 
 #[test]
 fn test_ld() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     let instruction = Instruction::LD(LoadType::Byte(LoadByteDestination::A, LoadByteSource::B));
     cpu.reg.b = 0xF1;
     cpu.is_halted = false;
@@ -182,7 +182,7 @@ fn test_ld() {
 
 #[test]
 fn test_sub_from_byte() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     let instruction = Instruction::from_byte(0x90, false);
     assert!(instruction.is_some());
     cpu.reg.a = 0x9;
@@ -195,7 +195,7 @@ fn test_sub_from_byte() {
 
 #[test]
 fn test_add_from_byte() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new_test();
     let instruction = Instruction::from_byte(0x80, false);
     assert!(instruction.is_some());
     cpu.reg.a = 0x8;
