@@ -53,11 +53,12 @@ Check commit dates for recent activity
   - [ ] Channel 2 ("Pulse B")
   - [ ] Channel 3 ("Wave")
   - [ ] Channel 4 ("Noise")
+- [ ] Add demo video to GitHub
 
 Possible Extensions:
 - [ ] publish on a website
 - [ ] fast forward (2x, 4x, 8x, 16x emulation)
-- [ ] save states (probably simply by copying all memory)
+- [ ] save/load states (probably simply by copying all memory)
   - [ ] rewind 10 seconds
 - [ ] option to display 160x144 viewport inside of 256x256 background, depends on PPU emulation accuracy
 - [ ] add Game Boy color support
